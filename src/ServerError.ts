@@ -48,6 +48,22 @@ export enum ServerErrorCode {
   FILE_UPLOAD_REQUEST_FAILED = "upload_request_failed",
   FILE_UPLOAD_FAILED = "upload_failed",
   GET_SCREENSHOTS_FAILED = "get_screenshots_failed",
+  GET_TEST_MATRIX_FAILED = "get_test_matrix_failed",
+  POST_TEST_MATRIX_FAILED = "post_test_matrix_failed",
+  PATCH_TEST_MATRIX_FAILED = "patch_test_matrix_failed",
+  DELETE_TEST_MATRIX_FAILED = "delete_test_matrix_failed",
+  GET_TEST_TARGET_GROUP_FAILED = "get_test_target_group_failed",
+  POST_TEST_TARGET_GROUP_FAILED = "post_test_target_group_failed",
+  PATCH_TEST_TARGET_GROUP_FAILED = "patch_test_target_group_failed",
+  DELETE_TEST_TARGET_GROUP_FAILED = "delete_test_target_group_failed",
+  GET_TEST_TARGET_FAILED = "get_test_target_failed",
+  POST_TEST_TARGET_FAILED = "post_test_target_failed",
+  PATCH_TEST_TARGET_FAILED = "patch_test_target_failed",
+  DELETE_TEST_TARGET_FAILED = "delete_test_target_failed",
+  GET_VIEW_POINT_FAILED = "get_view_point_failed",
+  POST_VIEW_POINT_FAILED = "post_view_point_failed",
+  PATCH_VIEW_POINT_FAILED = "patch_view_point_failed",
+  DELETE_VIEW_POINT_FAILED = "delete_view_point_failed",
 }
 
 export interface ServerErrorData {

@@ -70,6 +70,7 @@ export class SessionEntity {
 
   @ManyToOne(() => TestResultEntity, (testResult) => testResult.sessions, {
     nullable: true,
+    onDelete: "SET NULL",
   })
   @JoinColumn({ name: "test_result_id" })
   testResult?: TestResultEntity | null;

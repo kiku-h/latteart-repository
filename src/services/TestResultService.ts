@@ -177,6 +177,10 @@ export class TestResultServiceImpl implements TestResultService {
     }
 
     await transactionRunner.waitAndRun(async (transactionalEntityManager) => {
+      await transactionalEntityManager.delete(NoteEntity, {
+        testResult: { id: testResultId },
+      });
+
       await transactionalEntityManager.delete(TestStepEntity, {
         testResult: { id: testResultId },
       });
@@ -187,9 +191,6 @@ export class TestResultServiceImpl implements TestResultService {
         testResult: { id: testResultId },
       });
       await transactionalEntityManager.delete(TestPurposeEntity, {
-        testResult: { id: testResultId },
-      });
-      await transactionalEntityManager.delete(NoteEntity, {
         testResult: { id: testResultId },
       });
 

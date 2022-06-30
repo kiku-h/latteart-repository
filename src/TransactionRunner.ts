@@ -61,10 +61,14 @@ export class TransactionRunner {
           ].includes(error.name)
         ) {
           LoggingService.warn("Transaction is locked.");
+          if (i === this.maxRetry - 1) {
+            this.queue.pop();
+            throw error;
+          }
           await this.sleep(200);
           continue;
         }
-
+        this.queue.pop();
         throw error;
       }
     }

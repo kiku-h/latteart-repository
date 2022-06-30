@@ -29,6 +29,7 @@ module.exports = {
   coveragePathIgnorePatterns: [
     "<rootDir>/src/migrations",
     "<rootDir>/src/routes",
+    "<rootDir>/src/interfaces",
     ".+\\.validator\\.ts",
   ],
 

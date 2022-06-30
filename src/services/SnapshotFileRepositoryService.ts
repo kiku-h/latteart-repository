@@ -34,7 +34,8 @@ export interface SnapshotFileRepositoryService {
 }
 
 export class SnapshotFileRepositoryServiceImpl
-  implements SnapshotFileRepositoryService {
+  implements SnapshotFileRepositoryService
+{
   constructor(
     private service: {
       staticDirectory: StaticDirectoryService;
@@ -160,9 +161,8 @@ export class SnapshotFileRepositoryServiceImpl
       const attachedFileUrl = attachedFile.fileUrl;
       const attachedFileName = attachedFileUrl.split("/").slice(-1)[0];
 
-      const attachedFilePath = this.service.attachedFileRepository.getJoinedPath(
-        attachedFileName
-      );
+      const attachedFilePath =
+        this.service.attachedFileRepository.getJoinedPath(attachedFileName);
 
       await fs.copyFile(
         attachedFilePath,
@@ -327,9 +327,8 @@ export class SnapshotFileRepositoryServiceImpl
     const operationScreenshotFileName = sourceImageFileUrl
       .split("/")
       .slice(-1)[0];
-    const sourceScreenshotFilePath = this.service.imageFileRepository.getFilePath(
-      operationScreenshotFileName
-    );
+    const sourceScreenshotFilePath =
+      this.service.imageFileRepository.getFilePath(operationScreenshotFileName);
     const destScreenshotFilePath = path.join(
       destDirectoryName,
       path.basename(sourceScreenshotFilePath)
@@ -384,6 +383,7 @@ export class SnapshotFileRepositoryServiceImpl
                 type: string;
                 index: number;
               };
+              imageFilePath?: string;
             }[] = session.issues.map((issue) => {
               return {
                 type: issue.source.type,
@@ -395,6 +395,11 @@ export class SnapshotFileRepositoryServiceImpl
                   type: issue.source.type,
                   index: issue.source.index,
                 },
+                imageFilePath: `data/${
+                  story.id
+                }/${sessionIdAlias}/testResult/${path.basename(
+                  issue.imageFilePath ?? ""
+                )}`,
               };
             });
 
@@ -414,9 +419,10 @@ export class SnapshotFileRepositoryServiceImpl
             }[] = (
               await Promise.all(
                 testPurposeIds.map(async (testPurposeId) => {
-                  const testPurpose = await this.service.testPurpose.getTestPurpose(
-                    testPurposeId
-                  );
+                  const testPurpose =
+                    await this.service.testPurpose.getTestPurpose(
+                      testPurposeId
+                    );
 
                   return testPurpose
                     ? [
@@ -559,6 +565,7 @@ export class SnapshotFileRepositoryServiceImpl
             status: string;
             ticketId: string;
             source: { type: string; index: number };
+            imageFilePath?: string;
           }[];
           intentions: {
             value: string;

@@ -76,6 +76,7 @@ interface StoryDetails {
       ticketId: string;
       type: string;
       value: string;
+      imageFilePath?: string;
     }[];
     memo: string;
     name: string;

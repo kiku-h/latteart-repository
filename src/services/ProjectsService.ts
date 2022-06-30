@@ -916,6 +916,8 @@ export class ProjectsServiceImpl implements ProjectsService {
               "stories.sessions.attachedFiles",
               "stories.sessions.testResult",
               "stories.sessions.testResult.notes",
+              "stories.sessions.testResult.notes.testSteps",
+              "stories.sessions.testResult.notes.testSteps.screenshot",
               "stories.sessions.testResult.notes.tags",
               "stories.viewPoint",
               "stories.testTarget",
@@ -977,7 +979,10 @@ export class ProjectsServiceImpl implements ProjectsService {
                 doneDate: session.doneDate,
                 isDone: !!session.doneDate,
                 issues:
-                  session?.testResult?.notes?.map((note) => {
+                  session.testResult?.notes?.map((note) => {
+                    const testStep = note.testSteps
+                      ? note.testSteps[0]
+                      : undefined;
                     return {
                       details: note.details,
                       source: {
@@ -996,6 +1001,10 @@ export class ProjectsServiceImpl implements ProjectsService {
                       ticketId: "",
                       type: "notice",
                       value: note.value,
+                      imageFilePath:
+                        note.screenshot?.fileUrl ??
+                        testStep?.screenshot?.fileUrl ??
+                        "",
                     };
                   }) ?? [],
                 memo: session.memo,

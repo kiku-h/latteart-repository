@@ -216,6 +216,7 @@ const models: TsoaRoute.Models = {
               array: {
                 dataType: "nestedObjectLiteral",
                 nestedProperties: {
+                  imageFilePath: { dataType: "string" },
                   value: { dataType: "string", required: true },
                   type: { dataType: "string", required: true },
                   ticketId: { dataType: "string", required: true },
@@ -357,18 +358,21 @@ const models: TsoaRoute.Models = {
                           },
                           required: true,
                         },
+                        index: { dataType: "double", required: true },
                         name: { dataType: "string", required: true },
                         id: { dataType: "string", required: true },
                       },
                     },
                     required: true,
                   },
+                  index: { dataType: "double", required: true },
                   name: { dataType: "string", required: true },
                   id: { dataType: "string", required: true },
                 },
               },
               required: true,
             },
+            index: { dataType: "double", required: true },
             name: { dataType: "string", required: true },
             id: { dataType: "string", required: true },
           },
@@ -456,18 +460,21 @@ const models: TsoaRoute.Models = {
                           },
                           required: true,
                         },
+                        index: { dataType: "double", required: true },
                         name: { dataType: "string", required: true },
                         id: { dataType: "string", required: true },
                       },
                     },
                     required: true,
                   },
+                  index: { dataType: "double", required: true },
                   name: { dataType: "string", required: true },
                   id: { dataType: "string", required: true },
                 },
               },
               required: true,
             },
+            index: { dataType: "double", required: true },
             name: { dataType: "string", required: true },
             id: { dataType: "string", required: true },
           },
@@ -1100,71 +1107,6 @@ const models: TsoaRoute.Models = {
     additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  TestMatrix: {
-    dataType: "refObject",
-    properties: {
-      id: { dataType: "string", required: true },
-      name: { dataType: "string", required: true },
-      index: { dataType: "double", required: true },
-      groupIds: {
-        dataType: "array",
-        array: { dataType: "string" },
-        required: true,
-      },
-      viewPointIds: {
-        dataType: "array",
-        array: { dataType: "string" },
-        required: true,
-      },
-    },
-    additionalProperties: false,
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  GetTestMatrixResponse: {
-    dataType: "refAlias",
-    type: { ref: "TestMatrix", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  PostTestMatrixResponse: {
-    dataType: "refAlias",
-    type: { ref: "TestMatrix", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  PatchTestMatrixResponse: {
-    dataType: "refAlias",
-    type: { ref: "TestMatrix", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  TestTargetGroup: {
-    dataType: "refObject",
-    properties: {
-      id: { dataType: "string", required: true },
-      name: { dataType: "string", required: true },
-      index: { dataType: "double", required: true },
-      testTargetIds: {
-        dataType: "array",
-        array: { dataType: "string" },
-        required: true,
-      },
-    },
-    additionalProperties: false,
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  GetTestTargetGroupResponse: {
-    dataType: "refAlias",
-    type: { ref: "TestTargetGroup", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  PostTestTargetGroupResponse: {
-    dataType: "refAlias",
-    type: { ref: "TestTargetGroup", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  PatchTestTargetGroupResponse: {
-    dataType: "refAlias",
-    type: { ref: "TestTargetGroup", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   TestTarget: {
     dataType: "refObject",
     properties: {
@@ -1186,6 +1128,82 @@ const models: TsoaRoute.Models = {
     additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  TestTargetGroup: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      name: { dataType: "string", required: true },
+      index: { dataType: "double", required: true },
+      testTargets: {
+        dataType: "array",
+        array: { dataType: "refObject", ref: "TestTarget" },
+        required: true,
+      },
+    },
+    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  ViewPoint: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      name: { dataType: "string", required: true },
+      index: { dataType: "double" },
+      description: { dataType: "string", required: true },
+    },
+    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  TestMatrix: {
+    dataType: "refObject",
+    properties: {
+      id: { dataType: "string", required: true },
+      name: { dataType: "string", required: true },
+      index: { dataType: "double", required: true },
+      groups: {
+        dataType: "array",
+        array: { dataType: "refObject", ref: "TestTargetGroup" },
+        required: true,
+      },
+      viewPoints: {
+        dataType: "array",
+        array: { dataType: "refObject", ref: "ViewPoint" },
+        required: true,
+      },
+    },
+    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  GetTestMatrixResponse: {
+    dataType: "refAlias",
+    type: { ref: "TestMatrix", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  PostTestMatrixResponse: {
+    dataType: "refAlias",
+    type: { ref: "TestMatrix", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  PatchTestMatrixResponse: {
+    dataType: "refAlias",
+    type: { ref: "TestMatrix", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  GetTestTargetGroupResponse: {
+    dataType: "refAlias",
+    type: { ref: "TestTargetGroup", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  PostTestTargetGroupResponse: {
+    dataType: "refAlias",
+    type: { ref: "TestTargetGroup", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  PatchTestTargetGroupResponse: {
+    dataType: "refAlias",
+    type: { ref: "TestTargetGroup", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   GetTestTargetResponse: {
     dataType: "refAlias",
     type: { ref: "TestTarget", validators: {} },
@@ -1199,16 +1217,6 @@ const models: TsoaRoute.Models = {
   PatchTestTargetResponse: {
     dataType: "refAlias",
     type: { ref: "TestTarget", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  ViewPoint: {
-    dataType: "refObject",
-    properties: {
-      id: { dataType: "string", required: true },
-      name: { dataType: "string", required: true },
-      description: { dataType: "string", required: true },
-    },
-    additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   GetViewPointResponse: {
@@ -2901,13 +2909,17 @@ export function RegisterRoutes(app: express.Router) {
           dataType: "nestedObjectLiteral",
           nestedProperties: {
             plans: {
-              dataType: "nestedObjectLiteral",
-              nestedProperties: {
-                value: { dataType: "double", required: true },
-                viewPointId: { dataType: "string", required: true },
+              dataType: "array",
+              array: {
+                dataType: "nestedObjectLiteral",
+                nestedProperties: {
+                  value: { dataType: "double", required: true },
+                  viewPointId: { dataType: "string", required: true },
+                },
               },
             },
-            name: { dataType: "string", required: true },
+            index: { dataType: "double" },
+            name: { dataType: "string" },
           },
         },
       };

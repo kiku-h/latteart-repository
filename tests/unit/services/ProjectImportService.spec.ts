@@ -351,14 +351,17 @@ describe("ProjectImportService", () => {
           {
             id: "testMatrixId",
             name: "testMatrixName",
+            index: 0,
             groups: [
               {
                 id: "groupId",
                 name: "groupName",
+                index: 0,
                 testTargets: [
                   {
                     id: "testTargetId",
                     name: "testTargetName",
+                    index: 0,
                     plans: [
                       {
                         viewPointId: "viewPointId",

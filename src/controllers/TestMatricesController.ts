@@ -23,6 +23,7 @@ import LoggingService from "@/logger/LoggingService";
 import { ServerError, ServerErrorCode } from "@/ServerError";
 import { TestMatricesService } from "@/services/TestMatricesService";
 import { Controller, Body, Patch, Route, Path, Get, Post, Delete } from "tsoa";
+import { transactionRunner } from "..";
 
 @Route("/test-matrices/")
 export class TestMatricesController extends Controller {
@@ -84,7 +85,10 @@ export class TestMatricesController extends Controller {
   @Delete("{testMatrixId}")
   public async delete(@Path() testMatrixId: string): Promise<void> {
     try {
-      return await new TestMatricesService().delete(testMatrixId);
+      return await new TestMatricesService().delete(
+        testMatrixId,
+        transactionRunner
+      );
     } catch (error) {
       if (error instanceof Error) {
         LoggingService.error("Delete testMatrix failed.", error);

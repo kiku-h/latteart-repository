@@ -86,14 +86,17 @@ describe("IssueReportService", () => {
           {
             id: "testMatrix1",
             name: "testMatrixName1",
+            index: 0,
             groups: [
               {
                 id: "group1",
                 name: "groupName1",
+                index: 0,
                 testTargets: [
                   {
                     id: "testTarget1",
                     name: "testTargetName1",
+                    index: 0,
                     plans: [
                       {
                         viewPointId: "viewPoint1",

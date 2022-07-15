@@ -17,6 +17,7 @@
 export interface ViewPoint {
   id: string;
   name: string;
+  index?: number;
   description: string;
 }
 

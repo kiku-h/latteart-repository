@@ -31,14 +31,17 @@ describe("ProjectsService", () => {
           {
             id: "",
             name: "testMatrixName1",
+            index: 0,
             groups: [
               {
                 id: "",
                 name: "groupName1",
+                index: 0,
                 testTargets: [
                   {
                     id: "",
                     name: "testTargetName1",
+                    index: 0,
                     plans: [],
                   },
                 ],
@@ -142,17 +145,20 @@ describe("ProjectsService", () => {
               {
                 id: registeredTestMatrix.id,
                 name: "testMatrixName2",
+                index: 0,
                 groups: [
                   {
                     ...requestBodyForRegister.testMatrices[0].groups[0],
                     id: registeredgroup.id,
                     name: "groupName2",
+                    index: 0,
                     testTargets: [
                       {
                         ...requestBodyForRegister.testMatrices[0].groups[0]
                           .testTargets[0],
                         id: registeredTestTarget.id,
                         name: "testTarget2",
+                        index: 0,
                       },
                     ],
                   },

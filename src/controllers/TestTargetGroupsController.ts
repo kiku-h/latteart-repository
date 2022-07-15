@@ -23,6 +23,7 @@ import LoggingService from "@/logger/LoggingService";
 import { ServerError, ServerErrorCode } from "@/ServerError";
 import { TestTargetGroupsService } from "@/services/TestTargetGroupsService";
 import { Controller, Body, Patch, Route, Path, Get, Post, Delete } from "tsoa";
+import { transactionRunner } from "..";
 
 @Route("/test-target-groups/")
 export class TestTargetGroupsController extends Controller {
@@ -84,7 +85,10 @@ export class TestTargetGroupsController extends Controller {
   @Delete("{testTargetGroupId}")
   public async delete(@Path() testTargetGroupId: string): Promise<void> {
     try {
-      return await new TestTargetGroupsService().delete(testTargetGroupId);
+      return await new TestTargetGroupsService().delete(
+        testTargetGroupId,
+        transactionRunner
+      );
     } catch (error) {
       if (error instanceof Error) {
         LoggingService.error("Delete testTargetGroup failed.", error);

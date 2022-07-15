@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { TestTarget } from "./TestTargets";
+
 export interface TestTargetGroup {
   id: string;
   name: string;
   index: number;
-  testTargetIds: string[];
+  testTargets: TestTarget[];
 }
 
 export type GetTestTargetGroupResponse = TestTargetGroup;

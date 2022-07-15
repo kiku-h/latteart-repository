@@ -16,7 +16,9 @@
 
 import { ProjectEntity } from "@/entities/ProjectEntity";
 import { TestMatrixEntity } from "@/entities/TestMatrixEntity";
+import { ViewPointEntity } from "@/entities/ViewPointEntity";
 import { TestMatrix } from "@/interfaces/TestMatrices";
+import { TransactionRunner } from "@/TransactionRunner";
 import { getRepository } from "typeorm";
 
 export class TestMatricesService {
@@ -27,10 +29,10 @@ export class TestMatricesService {
     );
 
     if (!testMatrix) {
-      throw new Error(`TestMatrix not found. ${testMatrix}`);
+      throw new Error(`TestMatrix not found. ${testMatrixId}`);
     }
 
-    return this.testMatrixEntityToResponse(testMatrix);
+    return this.testMatrixIdToResponse(testMatrix.id);
   }
 
   public async post(body: {
@@ -50,7 +52,7 @@ export class TestMatricesService {
     const testMatrix = await getRepository(TestMatrixEntity).save(
       new TestMatrixEntity(body.name, nextIndex, projectEntity)
     );
-    return this.testMatrixEntityToResponse(testMatrix);
+    return this.testMatrixIdToResponse(testMatrix.id);
   }
 
   public async patch(
@@ -66,25 +68,111 @@ export class TestMatricesService {
       testMatrix.name = body.name;
       testMatrix = await testMatrixRepository.save(testMatrix);
     }
-    return this.testMatrixEntityToResponse(testMatrix);
+    return this.testMatrixIdToResponse(testMatrix.id);
   }
 
-  public async delete(testMatrixId: string): Promise<void> {
-    await getRepository(TestMatrixEntity).delete(testMatrixId);
+  public async delete(
+    testMatrixId: string,
+    transactionRunner: TransactionRunner
+  ): Promise<void> {
+    const testMatrixRepository = getRepository(TestMatrixEntity);
+    const testMatrix = await testMatrixRepository.findOne(testMatrixId, {
+      relations: ["project", "viewPoints"],
+    });
+    if (!testMatrix) {
+      throw new Error(`TestMatrix not found. ${testMatrixId}`);
+    }
+
+    await transactionRunner.waitAndRun(async (transactionalEntityManager) => {
+      await Promise.all(
+        testMatrix.viewPoints.map(async (viewPoint) => {
+          await transactionalEntityManager.delete(
+            ViewPointEntity,
+            viewPoint.id
+          );
+        })
+      );
+      await transactionalEntityManager.delete(TestMatrixEntity, testMatrixId);
+      const project = await transactionalEntityManager.findOne(
+        ProjectEntity,
+        testMatrix.project.id,
+        {
+          relations: ["testMatrices"],
+        }
+      );
+      if (!project) {
+        throw new Error(`Project not found.: ${testMatrix.project.id}`);
+      }
+
+      await Promise.all(
+        project.testMatrices
+          .sort((testMatrix1, testMatrix2) => {
+            return testMatrix1.index - testMatrix2.index;
+          })
+          .map(async (testMatrix, index) => {
+            testMatrix.index = index;
+            return await transactionalEntityManager.save(testMatrix);
+          })
+      );
+    });
+
     return;
   }
 
-  private testMatrixEntityToResponse(testMatrix: TestMatrixEntity): TestMatrix {
+  private async testMatrixIdToResponse(
+    testMatrixId: string
+  ): Promise<TestMatrix> {
+    const testMatrix = await getRepository(TestMatrixEntity).findOne(
+      testMatrixId,
+      {
+        relations: [
+          "testTargetGroups",
+          "testTargetGroups.testTargets",
+          "viewPoints",
+        ],
+      }
+    );
+    if (!testMatrix) {
+      throw new Error(`TestMatrix not found. ${testMatrix}`);
+    }
+
+    const orderByIndex = (val1: any, val2: any) => {
+      return val1.index - val2.index;
+    };
+
     return {
       id: testMatrix.id,
       name: testMatrix.name,
       index: testMatrix.index,
-      groupIds: (testMatrix.testTargetGroups ?? [])
-        .sort((t1, t2) => {
-          return t1.index - t2.index;
-        })
-        .map((t) => t.id),
-      viewPointIds: (testMatrix.viewPoints ?? []).map((v) => v.id),
+      groups: (testMatrix.testTargetGroups ?? [])
+        .sort(orderByIndex)
+        .map((group) => {
+          return {
+            id: group.id,
+            name: group.name,
+            index: group.index,
+            testTargets: (group.testTargets ?? [])
+              .sort(orderByIndex)
+              .map((testTarget) => {
+                return {
+                  id: testTarget.id,
+                  name: testTarget.name,
+                  index: testTarget.index,
+                  plans: JSON.parse(testTarget.text),
+                };
+              }),
+          };
+        }),
+      viewPoints: (testMatrix.viewPoints ?? [])
+        .sort(orderByIndex)
+        .map((viewPoint, index) => {
+          return {
+            id: viewPoint.id,
+            name: viewPoint.name,
+            index,
+            description: viewPoint.description ?? "",
+          };
+        }),
     };
   }
 }

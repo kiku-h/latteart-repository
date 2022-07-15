@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+import { TestTargetGroup } from "./TestTargetGroups";
+import { ViewPoint } from "./ViewPoints";
+
 export interface TestMatrix {
   id: string;
   name: string;
   index: number;
-  groupIds: string[];
-  viewPointIds: string[];
+  groups: TestTargetGroup[];
+  viewPoints: ViewPoint[];
 }
 
 export type GetTestMatrixResponse = TestMatrix;

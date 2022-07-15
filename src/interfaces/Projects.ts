@@ -29,12 +29,15 @@ export interface Project {
   testMatrices: {
     id: string;
     name: string;
+    index: number;
     groups: {
       id: string;
       name: string;
+      index: number;
       testTargets: {
         id: string;
         name: string;
+        index: number;
         plans: {
           viewPointId: string;
           value: number;
@@ -146,12 +149,15 @@ export interface UpdateProjectDto {
   testMatrices: {
     id: string;
     name: string;
+    index: number;
     groups: {
       id: string;
       name: string;
+      index: number;
       testTargets: {
         id: string;
         name: string;
+        index: number;
         plans: {
           viewPointId: string | null;
           value: number;

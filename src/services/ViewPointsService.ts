@@ -55,41 +55,39 @@ export class ViewPointsService {
       throw new Error(`TestMatrix not found. ${body.testMatrixId}`);
     }
 
-    let savedViewPoint: ViewPointEntity | null = null;
-    await transactionRunner.waitAndRun(async (transactionalEntityManager) => {
-      const viewPoint = new ViewPointEntity();
-      viewPoint.name = body.name;
-      viewPoint.index = body.index;
-      viewPoint.description = body.description;
-      viewPoint.testMatrices = [testMatrix];
+    return (await transactionRunner.waitAndRun(
+      async (transactionalEntityManager) => {
+        const viewPoint = new ViewPointEntity();
+        viewPoint.name = body.name;
+        viewPoint.index = body.index;
+        viewPoint.description = body.description;
+        viewPoint.testMatrices = [testMatrix];
 
-      savedViewPoint = await transactionalEntityManager.save(viewPoint);
+        const savedViewPoint = await transactionalEntityManager.save(viewPoint);
 
-      if (!savedViewPoint) {
-        throw new Error(`Save failed.`);
+        if (!savedViewPoint) {
+          throw new Error(`Save failed.`);
+        }
+
+        await Promise.all(
+          testMatrix.testTargetGroups.map(async (testTargetGroup) => {
+            await Promise.all(
+              testTargetGroup.testTargets.map(async (testTarget) => {
+                const newStory = new StoryEntity();
+                newStory.status = "out-of-scope";
+                newStory.index = 0;
+                newStory.planedSessionNumber = 0;
+                newStory.testMatrix = testMatrix;
+                newStory.viewPoint = viewPoint;
+                newStory.testTarget = testTarget;
+                await transactionalEntityManager.save(newStory);
+              })
+            );
+          })
+        );
+        return this.viewPointEntityToResponse(savedViewPoint);
       }
-
-      await Promise.all(
-        testMatrix.testTargetGroups.map(async (testTargetGroup) => {
-          await Promise.all(
-            testTargetGroup.testTargets.map(async (testTarget) => {
-              const newStory = new StoryEntity();
-              newStory.status = "out-of-scope";
-              newStory.index = 0;
-              newStory.planedSessionNumber = 0;
-              newStory.testMatrix = testMatrix;
-              newStory.viewPoint = viewPoint;
-              newStory.testTarget = testTarget;
-              await transactionalEntityManager.save(newStory);
-            })
-          );
-        })
-      );
-    });
-
-    return this.viewPointEntityToResponse(
-      savedViewPoint as unknown as ViewPointEntity
-    );
+    )) as unknown as ViewPoint;
   }
 
   public async patch(
@@ -102,14 +100,6 @@ export class ViewPointsService {
       throw new Error(`ViewPoint found. ${viewPointId}`);
     }
 
-    if (
-      (!body.name && !body.description) ||
-      (viewPoint.name === body.name &&
-        viewPoint.description === body.description)
-    ) {
-      return this.viewPointEntityToResponse(viewPoint);
-    }
-
     if (body.name && viewPoint.name !== body.name) {
       viewPoint.name = body.name;
     }
@@ -118,7 +108,7 @@ export class ViewPointsService {
       viewPoint.description = body.description;
     }
 
-    if (body.index && viewPoint.index !== body.index) {
+    if (body.index !== undefined && viewPoint.index !== body.index) {
       viewPoint.index = body.index;
     }
 
@@ -136,6 +126,7 @@ export class ViewPointsService {
     return {
       id: viewPoint.id,
       name: viewPoint.name,
+      index: viewPoint.index,
       description: viewPoint.description ?? "",
     };
   }

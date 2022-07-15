@@ -17,6 +17,7 @@
 import { TestMatrixEntity } from "@/entities/TestMatrixEntity";
 import { TestTargetGroupEntity } from "@/entities/TestTargetGroupEntity";
 import { TestTargetGroup } from "@/interfaces/TestTargetGroups";
+import { TransactionRunner } from "@/TransactionRunner";
 import { getRepository } from "typeorm";
 
 export class TestTargetGroupsService {
@@ -30,7 +31,7 @@ export class TestTargetGroupsService {
       throw new Error(`TestTargetGroup not found. ${testTargetGroupId}`);
     }
 
-    return this.testTargetGroupEntityToResponse(testTargetGroup);
+    return this.testTargetGroupIdEntityToResponse(testTargetGroup.id);
   }
 
   public async post(body: {
@@ -54,7 +55,7 @@ export class TestTargetGroupsService {
     const savedTestTargetGroup = await getRepository(
       TestTargetGroupEntity
     ).save(testTargetGroup);
-    return this.testTargetGroupEntityToResponse(savedTestTargetGroup);
+    return this.testTargetGroupIdEntityToResponse(savedTestTargetGroup.id);
   }
 
   public async patch(
@@ -72,26 +73,83 @@ export class TestTargetGroupsService {
       testTargetGroup.name = body.name;
       testTargetGroup = await testTargetGroupRepository.save(testTargetGroup);
     }
-    return this.testTargetGroupEntityToResponse(testTargetGroup);
+    return this.testTargetGroupIdEntityToResponse(testTargetGroup.id);
   }
 
-  public async delete(testTargetGroupId: string): Promise<void> {
-    await getRepository(TestTargetGroupEntity).delete(testTargetGroupId);
+  public async delete(
+    testTargetGroupId: string,
+    transactionRunner: TransactionRunner
+  ): Promise<void> {
+    const testTargetGroupRepository = getRepository(TestTargetGroupEntity);
+    const testTargetGroup = await testTargetGroupRepository.findOne(
+      testTargetGroupId,
+      { relations: ["testMatrix"] }
+    );
+
+    if (!testTargetGroup) {
+      throw new Error(`TestTargetGroup not found. ${testTargetGroupId}`);
+    }
+
+    await transactionRunner.waitAndRun(async (transactionalEntityManager) => {
+      await transactionalEntityManager.delete(
+        TestTargetGroupEntity,
+        testTargetGroupId
+      );
+      const testMatrix = await transactionalEntityManager.findOne(
+        TestMatrixEntity,
+        testTargetGroup.testMatrix.id,
+        { relations: ["testTargetGroups"] }
+      );
+
+      if (!testMatrix) {
+        throw new Error(
+          `TestMatrix not found.: ${testTargetGroup.testMatrix.id}`
+        );
+      }
+
+      await Promise.all(
+        testMatrix.testTargetGroups
+          .sort((group1, group2) => {
+            return group1.index - group2.index;
+          })
+          .map(async (testTargetGroup, index) => {
+            testTargetGroup.index = index;
+            return await transactionalEntityManager.save(testTargetGroup);
+          })
+      );
+    });
+
     return;
   }
 
-  private testTargetGroupEntityToResponse(
-    testTargetGroup: TestTargetGroupEntity
-  ): TestTargetGroup {
+  private async testTargetGroupIdEntityToResponse(
+    testTargetGroupId: string
+  ): Promise<TestTargetGroup> {
+    const testTargetGroup = await getRepository(TestTargetGroupEntity).findOne(
+      testTargetGroupId,
+      { relations: ["testTargets"] }
+    );
+
+    if (!testTargetGroup) {
+      throw new Error(`TestTargetGroup not found. ${testTargetGroupId}`);
+    }
+
     return {
       id: testTargetGroup.id,
       name: testTargetGroup.name,
       index: testTargetGroup.index,
-      testTargetIds: testTargetGroup.testTargets
-        .sort((t1, t2) => {
-          return t1.index - t2.index;
+      testTargets: (testTargetGroup.testTargets ?? [])
+        .sort((testTarget1, testTarget2) => {
+          return testTarget1.index - testTarget2.index;
         })
-        .map((t) => t.id),
+        .map((testTarget) => {
+          return {
+            id: testTarget.id,
+            name: testTarget.name,
+            index: testTarget.index,
+            plans: JSON.parse(testTarget.text),
+          };
+        }),
     };
   }
 }

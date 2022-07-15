@@ -1044,12 +1044,14 @@ export class ProjectsServiceImpl implements ProjectsService {
         return {
           id: testMatrix.id,
           name: testMatrix.name,
+          index: testMatrix.index,
           groups: testMatrix.testTargetGroups
             .sort(ascSortFunc)
             .map((testTargetGroup) => {
               return {
                 id: testTargetGroup.id,
                 name: testTargetGroup.name,
+                index: testTargetGroup.index,
                 testTargets: testTargetGroup.testTargets
                   .sort(ascSortFunc)
                   .map((testTarget) => {
@@ -1068,6 +1070,7 @@ export class ProjectsServiceImpl implements ProjectsService {
                     return {
                       id: testTarget.id,
                       name: testTarget.name,
+                      index: testTarget.index,
                       plans,
                     };
                   }),

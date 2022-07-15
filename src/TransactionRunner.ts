@@ -24,7 +24,7 @@ export class TransactionRunner {
     ) => Promise<unknown>;
   }[] = [];
 
-  constructor(private maxRetry: number = 10) {}
+  constructor(private maxRetry: number = 20) {}
 
   async waitAndRun(
     runInTransaction: (

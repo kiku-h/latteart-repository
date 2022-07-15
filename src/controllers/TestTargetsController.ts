@@ -67,10 +67,18 @@ export class TestTargetsController extends Controller {
   public async patch(
     @Path() testTargetId: string,
     @Body()
-    body: { name: string; plans?: { viewPointId: string; value: number } }
+    body: {
+      name?: string;
+      index?: number;
+      plans?: { viewPointId: string; value: number }[];
+    }
   ): Promise<PatchTestTargetResponse> {
     try {
-      return await new TestTargetService().patch(testTargetId, body);
+      return await new TestTargetService().patch(
+        testTargetId,
+        body,
+        transactionRunner
+      );
     } catch (error) {
       if (error instanceof Error) {
         LoggingService.error("Patch testTarget failed.", error);
@@ -86,7 +94,10 @@ export class TestTargetsController extends Controller {
   @Delete("{testTargetId}")
   public async delete(@Path() testTargetId: string): Promise<void> {
     try {
-      return await new TestTargetService().delete(testTargetId);
+      return await new TestTargetService().delete(
+        testTargetId,
+        transactionRunner
+      );
     } catch (error) {
       if (error instanceof Error) {
         LoggingService.error("Delete testTarget failed.", error);

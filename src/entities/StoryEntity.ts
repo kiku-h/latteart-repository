@@ -25,6 +25,7 @@ import {
 } from "typeorm";
 import { SessionEntity } from "./SessionEntity";
 import { TestMatrixEntity } from "./TestMatrixEntity";
+import { TestProgressEntity } from "./TestProgressEntity";
 import { TestTargetEntity } from "./TestTargetEntity";
 import { ViewPointEntity } from "./ViewPointEntity";
 
@@ -71,4 +72,7 @@ export class StoryEntity {
 
   @OneToMany(() => SessionEntity, (session) => session.story)
   sessions!: SessionEntity[];
+
+  @OneToMany(() => TestProgressEntity, (testProgress) => testProgress.story)
+  testProgresses!: TestProgressEntity[];
 }

@@ -7,8 +7,8 @@ import { TimestampServiceImpl } from "@/services/TimestampService";
 import { SqliteTestConnectionHelper } from "../../helper/TestConnectionHelper";
 import { getRepository } from "typeorm";
 import path from "path";
-import moment from "moment";
 import fs from "fs-extra";
+import { getCurrentUnixtime, unixtimeToFormattedString } from "@/lib/timeUtil";
 
 const testConnectionHelper = new SqliteTestConnectionHelper();
 
@@ -60,7 +60,10 @@ describe("ScreenshotsService", () => {
         })
       );
 
-      const datetime = moment().format("YYYYMMDD_HHmmss");
+      const datetime = unixtimeToFormattedString(
+        getCurrentUnixtime(),
+        "YYYYMMDD_HHmmss"
+      );
       const timeStampService: TimestampServiceImpl = {
         unix: jest.fn(),
         format: () => {

@@ -15,7 +15,7 @@
  */
 
 import { ProjectEntity } from "@/entities/ProjectEntity";
-import { Project } from "@/interfaces/Projects";
+import { ProgressData, Project } from "@/interfaces/Projects";
 import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { TestResultService } from "./TestResultService";
 import path from "path";
@@ -33,9 +33,10 @@ import { AttachedFileEntity } from "@/entities/AttachedFilesEntity";
 import { TimestampService } from "./TimestampService";
 import { TestStepService } from "./TestStepService";
 import { TestResultEntity } from "@/entities/TestResultEntity";
-import { ProgressDataEntity } from "@/entities/ProgressDataEntity";
 import { StaticDirectoryService } from "./StaticDirectoryService";
 import { TransactionRunner } from "@/TransactionRunner";
+import { TestProgressEntity } from "@/entities/TestProgressEntity";
+import { unixtimeToDate } from "@/lib/timeUtil";
 
 interface TestResultData {
   testResultId: string;
@@ -231,13 +232,33 @@ export class ProjectImportService {
       attachedFileRepositoryService: ImageFileRepositoryService;
     }
   ): Promise<string> {
-    const projectJson = JSON.parse(projectData.projectFile.data) as Project;
+    const projectJson = JSON.parse(projectData.projectFile.data) as Project & {
+      progressDatas: ProgressData[];
+    };
     let projectId = "";
 
     // <oldId, newEntity(newId)>
     const testMatrixRelationMap: Map<string, TestMatrixEntity> = new Map();
     const groupIdRelationMap: Map<string, string> = new Map();
     const testTargetRelationMap: Map<string, string> = new Map();
+
+    const oldTestTargetProgressDatas = projectJson.progressDatas.flatMap(
+      ({ testMatrixProgressDatas }) => {
+        return testMatrixProgressDatas.flatMap(({ date, groups }) => {
+          return groups.flatMap((group) => {
+            return group.testTargets.map((testTarget) => {
+              return {
+                date,
+                testTargetId: testTarget.id,
+                plannedSessionNumber: testTarget.progress.planNumber,
+                completedSessionNumber: testTarget.progress.completedNumber,
+                incompletedSessionNumber: testTarget.progress.incompletedNumber,
+              };
+            });
+          });
+        });
+      }
+    );
 
     await service.transactionRunner.waitAndRun(
       async (transactionalEntityManager) => {
@@ -419,71 +440,30 @@ export class ProjectImportService {
                   newSessionEntity.attachedFiles = attachedFileEntities;
                   await transactionalEntityManager.save(newSessionEntity);
                 }
+
+                if (storyIndex === 1) {
+                  const progressDatas = oldTestTargetProgressDatas.filter(
+                    ({ testTargetId }) =>
+                      testTargetBeforeSaving.id === testTargetId
+                  );
+
+                  for (const progressData of progressDatas) {
+                    const testProgressEntity = new TestProgressEntity();
+                    testProgressEntity.plannedSessionNumber =
+                      progressData.plannedSessionNumber;
+                    (testProgressEntity.completedSessionNumber =
+                      progressData.completedSessionNumber),
+                      (testProgressEntity.incompletedSessionNumber =
+                        progressData.incompletedSessionNumber),
+                      (testProgressEntity.story = newStoryEntity),
+                      (testProgressEntity.date = unixtimeToDate(
+                        parseInt(progressData.date, 10)
+                      )),
+                      await transactionalEntityManager.save(testProgressEntity);
+                  }
+                }
               }
             }
-          }
-        }
-        const newProgressDatas = projectJson.progressDatas.map(
-          (progressData) => {
-            return {
-              testMatrixId: progressData.testMatrixId,
-              testMatrixProgressDatas: progressData.testMatrixProgressDatas.map(
-                (testMatrixProgressData) => {
-                  return {
-                    date: testMatrixProgressData.date,
-                    groups: testMatrixProgressData.groups.map((group) => {
-                      const groupId = groupIdRelationMap.get(group.id);
-                      if (!groupId) {
-                        throw new Error(`Group not found. old id: ${group.id}`);
-                      }
-                      return {
-                        id: groupId,
-                        name: group.name,
-                        testTargets: group.testTargets.map((testTarget) => {
-                          const testTargetId = testTargetRelationMap.get(
-                            testTarget.id
-                          );
-                          if (!testTargetId) {
-                            throw new Error(
-                              `Test Target not found. old id: ${testTarget.id}`
-                            );
-                          }
-                          return {
-                            id: testTargetId,
-                            name: testTarget.name,
-                            progress: {
-                              completedNumber:
-                                testTarget.progress.completedNumber,
-                              incompletedNumber:
-                                testTarget.progress.incompletedNumber,
-                              planNumber: testTarget.progress.planNumber,
-                            },
-                          };
-                        }),
-                      };
-                    }),
-                  };
-                }
-              ),
-            };
-          }
-        );
-        for (const newProgressData of newProgressDatas) {
-          const testMatrix = testMatrixRelationMap.get(
-            newProgressData.testMatrixId
-          );
-          if (!testMatrix) {
-            throw new Error(
-              `Test Matrix not found. old id: ${newProgressData.testMatrixId}`
-            );
-          }
-          for (const testMatrixProgressData of newProgressData.testMatrixProgressDatas) {
-            const progressDataEntity = new ProgressDataEntity({
-              testMatrix,
-              date: testMatrixProgressData.date,
-              text: JSON.stringify(testMatrixProgressData.groups),
-            });
-            await transactionalEntityManager.save(progressDataEntity);
           }
         }
       }

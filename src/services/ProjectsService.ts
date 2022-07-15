@@ -36,6 +36,7 @@ import { TestResultEntity } from "@/entities/TestResultEntity";
 import LoggingService from "@/logger/LoggingService";
 import { TimestampService } from "./TimestampService";
 import { TransactionRunner } from "@/TransactionRunner";
+import { TestProgressService } from "./TestProgressService";
 
 export interface ProjectsService {
   getProjectIdentifiers(): Promise<ProjectListResponse[]>;
@@ -53,6 +54,7 @@ export class ProjectsServiceImpl implements ProjectsService {
   constructor(
     private service: {
       timestamp: TimestampService;
+      testProgress: TestProgressService;
     },
     private transactionRunner: TransactionRunner
   ) {}
@@ -280,52 +282,7 @@ export class ProjectsServiceImpl implements ProjectsService {
             }
           }
         }
-        for (const progressData of requestBody.progressDatas) {
-          for (const testMatrixProgressData of progressData.testMatrixProgressDatas) {
-            const groupProgressDatas = testMatrixProgressData.groups.flatMap(
-              (group) => {
-                const testTargets = group.testTargets.flatMap((testTarget) => {
-                  if (testTarget.id) return [testTarget];
 
-                  if (newTestTargetEntity) {
-                    return [{ ...testTarget, id: newTestTargetEntity.id }];
-                  }
-
-                  return [];
-                });
-
-                if (group.id) return [{ ...group, testTargets }];
-
-                if (newTestTargetGroupEntity) {
-                  return [
-                    {
-                      ...group,
-                      testTargets,
-                      id: newTestTargetGroupEntity.id,
-                    },
-                  ];
-                }
-
-                return [];
-              }
-            );
-
-            const testMatrixEntity =
-              (await transactionalEntityManager.findOne(
-                TestMatrixEntity,
-                progressData.testMatrixId
-              )) ?? newTestMatrixEntity;
-
-            if (testMatrixEntity) {
-              await this.updateProgressData(
-                transactionalEntityManager,
-                testMatrixEntity,
-                testMatrixProgressData.date,
-                JSON.stringify(groupProgressDatas)
-              );
-            }
-          }
-        }
         for (const [index, story] of requestBody.stories.entries()) {
           let existsStory = null;
           for (const t of existsProject.testMatrices) {
@@ -370,6 +327,30 @@ export class ProjectsServiceImpl implements ProjectsService {
             );
             unupdatedSessions = sessionEntityWithUnupdateList.unupdatedList;
           }
+
+          const plannedSessionNumber =
+            requestBody.testMatrices
+              .find((testMatrix) => testMatrix.id === story.testMatrixId)
+              ?.groups.find((group) =>
+                group.testTargets.some(
+                  (testTarget) => testTarget.id === story.testTargetId
+                )
+              )
+              ?.testTargets.find(
+                (testTarget) => testTarget.id === story.testTargetId
+              )
+              ?.plans.find((plan) => plan.viewPointId === story.viewPointId)
+              ?.value ?? 0;
+
+          await this.service.testProgress.registerTestProgress(story.id, {
+            plannedSessionNumber,
+            completedSessionNumber: story.sessions.filter(
+              (session) => session.doneDate
+            ).length,
+            incompletedSessionNumber: story.sessions.filter(
+              (session) => !session.doneDate
+            ).length,
+          });
         }
         LoggingService.debug(
           `END UPDATE - ${this.service.timestamp.format(
@@ -678,31 +659,6 @@ export class ProjectsServiceImpl implements ProjectsService {
     };
   }
 
-  private async updateProgressData(
-    transactionalEntityManager: EntityManager,
-    testMatrix: TestMatrixEntity,
-    date: string,
-    text: string
-  ): Promise<void> {
-    let targetProgressData = await transactionalEntityManager.findOne(
-      ProgressDataEntity,
-      {
-        date,
-        testMatrix,
-      },
-      { relations: ["testMatrix"] }
-    );
-    if (targetProgressData) {
-      if (targetProgressData.text === text) {
-        return;
-      }
-      targetProgressData.text = text;
-    } else {
-      targetProgressData = new ProgressDataEntity({ testMatrix, date, text });
-    }
-    await transactionalEntityManager.save(targetProgressData);
-  }
-
   private async createStoriesFromViewPoint(
     transactionalEntityManager: EntityManager,
     viewPoint: ViewPointEntity,
@@ -877,21 +833,6 @@ export class ProjectsServiceImpl implements ProjectsService {
     }
   }
 
-  private extractissuesFrom(session: SessionEntity): any {
-    session.testResult?.notes?.map((note) => {
-      return {
-        details: note.details,
-        source: {
-          index: 0,
-          type: "notice",
-        },
-        status: "",
-        ticketid: "",
-        type: "notice",
-        value: note.value,
-      };
-    });
-  }
   private async getReturnProject(projectId: string): Promise<ProjectEntity> {
     const projectRepository = getRepository(ProjectEntity);
     const testMatrixRepository = getRepository(TestMatrixEntity);
@@ -1087,32 +1028,6 @@ export class ProjectsServiceImpl implements ProjectsService {
         };
       }),
       stories,
-      progressDatas: project.testMatrices.map((testMatrix) => {
-        return {
-          testMatrixId: testMatrix.id,
-          testMatrixProgressDatas: testMatrix.progressDatas.map(
-            (progressData) => {
-              const groups = JSON.parse(progressData.text) as {
-                name: string;
-                id: string;
-                testTargets: {
-                  progress: {
-                    planNumber: number;
-                    incompletedNumber: number;
-                    completedNumber: number;
-                  };
-                  name: string;
-                  id: string;
-                }[];
-              }[];
-              return {
-                date: progressData.date,
-                groups,
-              };
-            }
-          ),
-        };
-      }),
     };
   }
 }

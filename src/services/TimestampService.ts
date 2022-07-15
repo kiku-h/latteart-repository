@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import moment from "moment";
+import {
+  getCurrentEpochMillis,
+  getCurrentUnixtime,
+  unixtimeToFormattedString,
+} from "@/lib/timeUtil";
 
 export interface TimestampService {
   unix(): number;
@@ -24,14 +28,14 @@ export interface TimestampService {
 
 export class TimestampServiceImpl implements TimestampService {
   public unix(): number {
-    return moment().unix();
+    return getCurrentUnixtime();
   }
 
   public format(format: string): string {
-    return moment().format(format);
+    return unixtimeToFormattedString(getCurrentUnixtime(), format);
   }
 
   public epochMilliseconds(): number {
-    return moment().valueOf();
+    return getCurrentEpochMillis();
   }
 }

@@ -18,7 +18,7 @@ import {
   createNotesServiceMock,
   createTestPurposeServiceMock,
 } from "../../helper/createServiceMock";
-import { Project } from "@/interfaces/Projects";
+import { ProgressData, Project } from "@/interfaces/Projects";
 import { getRepository } from "typeorm";
 import { ProjectEntity } from "@/entities/ProjectEntity";
 
@@ -344,7 +344,9 @@ describe("ProjectImportService", () => {
       const attachedFileRepositoryService =
         createImageFileRepositoryServiceMock();
 
-      const projectJson: Project = {
+      const projectJson: Project & {
+        progressDatas: ProgressData[];
+      } = {
         id: "projectId",
         name: "projectName",
         testMatrices: [

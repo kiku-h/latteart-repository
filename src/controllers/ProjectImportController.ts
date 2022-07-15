@@ -86,11 +86,10 @@ export class ProjectImportController extends Controller {
       const attachedFileRepositoryService = new ImageFileRepositoryServiceImpl({
         staticDirectory: attachedFileDirectoryService,
       });
-      const importDirectoryRepositoryService = new ImageFileRepositoryServiceImpl(
-        {
+      const importDirectoryRepositoryService =
+        new ImageFileRepositoryServiceImpl({
           staticDirectory: tempDirectoryService,
-        }
-      );
+        });
       const configService = new ConfigsService();
       const testStepService = new TestStepServiceImpl({
         imageFileRepository: screenshotRepositoryService,

@@ -53,7 +53,7 @@ interface TestResult {
         attributes: {
           [key: string]: string;
         };
-      };
+      } | null;
       title: string;
       url: string;
       imageFileUrl: string;

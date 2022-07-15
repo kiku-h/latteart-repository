@@ -15,8 +15,20 @@
  */
 
 import { ProjectEntity } from "@/entities/ProjectEntity";
-import { CreateTestScriptDto } from "@/interfaces/TestScripts";
+import {
+  createWDIOLocatorFormatter,
+  ElementLocatorGeneratorImpl,
+} from "@/lib/elementLocator";
+import ScreenDefFactory from "@/lib/ScreenDefFactory";
+import { invalidOperationTypeExists } from "@/lib/scriptGenerator/model/pageObject/method/operation/PageObjectOperation";
+import { TestScript } from "@/lib/scriptGenerator/TestScript";
+import {
+  TestScriptGenerationOption,
+  TestScriptGeneratorImpl,
+} from "@/lib/scriptGenerator/TestScriptGenerator";
+import { ServerError, ServerErrorCode } from "@/ServerError";
 import { getRepository } from "typeorm";
+import { ConfigsService } from "./ConfigsService";
 import { TestResultService } from "./TestResultService";
 import { TestScriptFileRepositoryService } from "./TestScriptFileRepositoryService";
 
@@ -25,15 +37,14 @@ export class TestScriptsService {
     private service: {
       testResult: TestResultService;
       testScriptFileRepository: TestScriptFileRepositoryService;
+      config: ConfigsService;
     }
   ) {}
 
   public async createTestScriptByProject(
     projectId: string,
-    requestBody: CreateTestScriptDto
-  ): Promise<{ url: string }> {
-    console.log(projectId, requestBody);
-
+    option: TestScriptGenerationOption
+  ): Promise<{ url: string; invalidOperationTypeExists: boolean }> {
     const testResultIds = (
       await getRepository(ProjectEntity).findOneOrFail(projectId, {
         relations: [
@@ -51,6 +62,15 @@ export class TestScriptsService {
       });
     });
 
+    const { testScript, invalidOperationTypeExists } =
+      await this.generateTestScript({ testResultIds, option });
+
+    if (!testScript.testSuite) {
+      throw new ServerError(500, {
+        code: ServerErrorCode.NO_TEST_CASES_GENERATED,
+      });
+    }
+
     const screenshots: { id: string; fileUrl: string }[] = (
       await Promise.all(
         testResultIds.map((testResultId) => {
@@ -62,28 +82,114 @@ export class TestScriptsService {
     ).flat();
 
     const url = await this.service.testScriptFileRepository.write(
-      requestBody,
+      {
+        ...testScript,
+        testSuite: testScript.testSuite,
+      },
       screenshots
     );
 
-    return { url };
+    return { url, invalidOperationTypeExists };
   }
 
   public async createTestScriptByTestResult(
     testResultId: string,
-    requestBody: CreateTestScriptDto
-  ): Promise<{ url: string }> {
-    console.log(testResultId, requestBody);
+    option: TestScriptGenerationOption
+  ): Promise<{ url: string; invalidOperationTypeExists: boolean }> {
+    const { testScript, invalidOperationTypeExists } =
+      await this.generateTestScript({ testResultIds: [testResultId], option });
 
-    const screenshots = await this.service.testResult.collectAllTestStepScreenshots(
-      testResultId
-    );
+    if (!testScript.testSuite) {
+      throw new ServerError(500, {
+        code: ServerErrorCode.NO_TEST_CASES_GENERATED,
+      });
+    }
+
+    const screenshots =
+      await this.service.testResult.collectAllTestStepScreenshots(testResultId);
 
     const url = await this.service.testScriptFileRepository.write(
-      requestBody,
+      {
+        ...testScript,
+        testSuite: testScript.testSuite,
+      },
       screenshots
     );
 
-    return { url };
+    return { url, invalidOperationTypeExists };
+  }
+
+  private async generateTestScript(params: {
+    testResultIds: string[];
+    option: TestScriptGenerationOption;
+  }): Promise<{
+    testScript: TestScript;
+    invalidOperationTypeExists: boolean;
+  }> {
+    const testResults = (
+      await Promise.all(
+        params.testResultIds.map(async (testResultId) => {
+          const testResult = await this.service.testResult.getTestResult(
+            testResultId
+          );
+          return testResult ? [testResult] : [];
+        })
+      )
+    ).flat();
+
+    const screenDefinitionConfig = (await this.service.config.getConfig("1"))
+      .config.screenDefinition;
+
+    const locatorGenerator = new ElementLocatorGeneratorImpl(
+      createWDIOLocatorFormatter()
+    );
+
+    const sources = testResults.map(({ initialUrl, testSteps }) => {
+      return {
+        initialUrl,
+        history: testSteps.map(({ operation }) => {
+          const url = operation.url;
+          const title = operation.title;
+          const keywordTexts: string[] = operation.keywordTexts ?? [];
+          const screenDef = new ScreenDefFactory(screenDefinitionConfig).create(
+            {
+              url,
+              title,
+              keywordSet: new Set(keywordTexts),
+            }
+          );
+          const elementInfo = operation.elementInfo
+            ? {
+                ...operation.elementInfo,
+                locator: locatorGenerator.generateFrom(operation.elementInfo),
+              }
+            : null;
+
+          return {
+            input: operation.input,
+            type: operation.type,
+            elementInfo,
+            url,
+            screenDef,
+            imageFilePath: operation.imageFileUrl,
+          };
+        }),
+      };
+    });
+
+    const testScriptGenerator = new TestScriptGeneratorImpl(params.option);
+
+    const testScript = testScriptGenerator.generate(sources);
+
+    const invalidTypeExists = sources.some((source) => {
+      return source.history.some((operation) => {
+        return invalidOperationTypeExists(operation.type);
+      });
+    });
+
+    return {
+      testScript,
+      invalidOperationTypeExists: invalidTypeExists,
+    };
   }
 }

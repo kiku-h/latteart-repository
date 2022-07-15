@@ -16,14 +16,16 @@
 
 import LoggingService from "@/logger/LoggingService";
 import { ServerErrorCode, ServerError } from "@/ServerError";
+import { TestProgressServiceImpl } from "@/services/TestProgressService";
 import { TimestampServiceImpl } from "@/services/TimestampService";
-import { Controller, Body, Get, Put, Post, Route, Path } from "tsoa";
+import { Controller, Body, Get, Put, Post, Route, Path, Query } from "tsoa";
 import { transactionRunner } from "..";
 import {
   ProjectListResponse,
   GetProjectResponse,
   UpdateProjectResponse,
   UpdateProjectDto,
+  GetTestProgressResponse,
 } from "../interfaces/Projects";
 import { ProjectsServiceImpl } from "../services/ProjectsService";
 
@@ -34,6 +36,7 @@ export class ProjectsController extends Controller {
     return new ProjectsServiceImpl(
       {
         timestamp: new TimestampServiceImpl(),
+        testProgress: new TestProgressServiceImpl(),
       },
       transactionRunner
     ).getProjectIdentifiers();
@@ -45,6 +48,7 @@ export class ProjectsController extends Controller {
       return await new ProjectsServiceImpl(
         {
           timestamp: new TimestampServiceImpl(),
+          testProgress: new TestProgressServiceImpl(),
         },
         transactionRunner
       ).createProject();
@@ -66,6 +70,7 @@ export class ProjectsController extends Controller {
       return await new ProjectsServiceImpl(
         {
           timestamp: new TimestampServiceImpl(),
+          testProgress: new TestProgressServiceImpl(),
         },
         transactionRunner
       ).getProject(projectId);
@@ -91,6 +96,7 @@ export class ProjectsController extends Controller {
       return await new ProjectsServiceImpl(
         {
           timestamp: new TimestampServiceImpl(),
+          testProgress: new TestProgressServiceImpl(),
         },
         transactionRunner
       ).updateProject(projectId, requestBody);
@@ -100,6 +106,41 @@ export class ProjectsController extends Controller {
 
         throw new ServerError(500, {
           code: ServerErrorCode.SAVE_PROJECT_FAILED,
+        });
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  @Get("{projectId}/progress")
+  public async getTestProgress(
+    @Path() projectId: string,
+    @Query() since?: number,
+    @Query() until?: number
+  ): Promise<GetTestProgressResponse[]> {
+    try {
+      const project = await new ProjectsServiceImpl(
+        {
+          timestamp: new TimestampServiceImpl(),
+          testProgress: new TestProgressServiceImpl(),
+        },
+        transactionRunner
+      ).getProject(projectId);
+
+      const storyIds = project.stories.map((story) => story.id);
+
+      const filter = { since, until };
+      return await new TestProgressServiceImpl().collectDailyTestProgresses(
+        storyIds,
+        filter
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        LoggingService.error("Get test progress failed.", error);
+
+        throw new ServerError(500, {
+          code: ServerErrorCode.GET_TEST_PROGRESS_FAILED,
         });
       } else {
         throw error;

@@ -64,6 +64,8 @@ export enum ServerErrorCode {
   POST_VIEW_POINT_FAILED = "post_view_point_failed",
   PATCH_VIEW_POINT_FAILED = "patch_view_point_failed",
   DELETE_VIEW_POINT_FAILED = "delete_view_point_failed",
+  NO_TEST_CASES_GENERATED = "no_test_cases_generated",
+  GET_TEST_PROGRESS_FAILED = "get_test_progress_failed",
 }
 
 export interface ServerErrorData {

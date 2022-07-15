@@ -38,6 +38,7 @@ import { CreateResponse } from "../interfaces/Snapshots";
 import { SnapshotsService } from "../services/SnapshotsService";
 import path from "path";
 import { appRootPath } from "@/common";
+import { TestProgressServiceImpl } from "@/services/TestProgressService";
 
 @Route("projects/{projectId}/snapshots")
 export class SnapshotsController extends Controller {
@@ -106,6 +107,7 @@ export class SnapshotsController extends Controller {
         config: new ConfigsService(),
         issueReport: issueReportService,
         attachedFileRepository: attachedFileDirectoryService,
+        testProgress: new TestProgressServiceImpl(),
       },
       {
         snapshotViewer: { path: path.join(appRootPath, "snapshot-viewer") },
@@ -118,6 +120,7 @@ export class SnapshotsController extends Controller {
       project: new ProjectsServiceImpl(
         {
           timestamp: new TimestampServiceImpl(),
+          testProgress: new TestProgressServiceImpl(),
         },
         transactionRunner
       ),

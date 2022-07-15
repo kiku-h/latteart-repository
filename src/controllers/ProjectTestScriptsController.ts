@@ -34,7 +34,7 @@ export class ProjectTestScriptsController extends Controller {
   public async create(
     @Path() projectId: string,
     @Body() requestBody: CreateTestScriptDto
-  ): Promise<{ url: string }> {
+  ): Promise<{ url: string; invalidOperationTypeExists: boolean }> {
     const timestampService = new TimestampServiceImpl();
     const imageFileRepositoryService = new ImageFileRepositoryServiceImpl({
       staticDirectory: screenshotDirectoryService,
@@ -61,8 +61,13 @@ export class ProjectTestScriptsController extends Controller {
       return await new TestScriptsService({
         testResult: testResultService,
         testScriptFileRepository: testScriptFileRepositoryService,
+        config: new ConfigsService(),
       }).createTestScriptByProject(projectId, requestBody);
     } catch (error) {
+      if (error instanceof ServerError) {
+        throw error;
+      }
+
       if (error instanceof Error) {
         LoggingService.error("Save test script failed.", error);
 
@@ -70,6 +75,7 @@ export class ProjectTestScriptsController extends Controller {
           code: ServerErrorCode.SAVE_TEST_SCRIPT_FAILED,
         });
       }
+
       throw error;
     }
   }

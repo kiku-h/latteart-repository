@@ -256,61 +256,6 @@ const models: TsoaRoute.Models = {
     additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  ProgressData: {
-    dataType: "refObject",
-    properties: {
-      testMatrixId: { dataType: "string", required: true },
-      testMatrixProgressDatas: {
-        dataType: "array",
-        array: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            groups: {
-              dataType: "array",
-              array: {
-                dataType: "nestedObjectLiteral",
-                nestedProperties: {
-                  testTargets: {
-                    dataType: "array",
-                    array: {
-                      dataType: "nestedObjectLiteral",
-                      nestedProperties: {
-                        progress: {
-                          dataType: "nestedObjectLiteral",
-                          nestedProperties: {
-                            planNumber: { dataType: "double", required: true },
-                            incompletedNumber: {
-                              dataType: "double",
-                              required: true,
-                            },
-                            completedNumber: {
-                              dataType: "double",
-                              required: true,
-                            },
-                          },
-                          required: true,
-                        },
-                        name: { dataType: "string", required: true },
-                        id: { dataType: "string", required: true },
-                      },
-                    },
-                    required: true,
-                  },
-                  name: { dataType: "string", required: true },
-                  id: { dataType: "string", required: true },
-                },
-              },
-              required: true,
-            },
-            date: { dataType: "string", required: true },
-          },
-        },
-        required: true,
-      },
-    },
-    additionalProperties: false,
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   Project: {
     dataType: "refObject",
     properties: {
@@ -384,11 +329,6 @@ const models: TsoaRoute.Models = {
         array: { dataType: "refObject", ref: "StoryDetails" },
         required: true,
       },
-      progressDatas: {
-        dataType: "array",
-        array: { dataType: "refObject", ref: "ProgressData" },
-        required: true,
-      },
     },
     additionalProperties: false,
   },
@@ -398,9 +338,94 @@ const models: TsoaRoute.Models = {
     type: { ref: "Project", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  "Pick_Project.Exclude_keyofProject.progressDatas__": {
+    dataType: "refAlias",
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        id: { dataType: "string", required: true },
+        name: { dataType: "string", required: true },
+        testMatrices: {
+          dataType: "array",
+          array: {
+            dataType: "nestedObjectLiteral",
+            nestedProperties: {
+              viewPoints: {
+                dataType: "array",
+                array: {
+                  dataType: "nestedObjectLiteral",
+                  nestedProperties: {
+                    description: { dataType: "string", required: true },
+                    index: { dataType: "double", required: true },
+                    name: { dataType: "string", required: true },
+                    id: { dataType: "string", required: true },
+                  },
+                },
+                required: true,
+              },
+              groups: {
+                dataType: "array",
+                array: {
+                  dataType: "nestedObjectLiteral",
+                  nestedProperties: {
+                    testTargets: {
+                      dataType: "array",
+                      array: {
+                        dataType: "nestedObjectLiteral",
+                        nestedProperties: {
+                          plans: {
+                            dataType: "array",
+                            array: {
+                              dataType: "nestedObjectLiteral",
+                              nestedProperties: {
+                                value: { dataType: "double", required: true },
+                                viewPointId: {
+                                  dataType: "string",
+                                  required: true,
+                                },
+                              },
+                            },
+                            required: true,
+                          },
+                          name: { dataType: "string", required: true },
+                          id: { dataType: "string", required: true },
+                        },
+                      },
+                      required: true,
+                    },
+                    name: { dataType: "string", required: true },
+                    id: { dataType: "string", required: true },
+                  },
+                },
+                required: true,
+              },
+              name: { dataType: "string", required: true },
+              id: { dataType: "string", required: true },
+            },
+          },
+          required: true,
+        },
+        stories: {
+          dataType: "array",
+          array: { dataType: "refObject", ref: "StoryDetails" },
+          required: true,
+        },
+      },
+      validators: {},
+    },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  "Omit_Project.progressDatas_": {
+    dataType: "refAlias",
+    type: {
+      ref: "Pick_Project.Exclude_keyofProject.progressDatas__",
+      validators: {},
+    },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   UpdateProjectResponse: {
     dataType: "refAlias",
-    type: { ref: "Project", validators: {} },
+    type: { ref: "Omit_Project.progressDatas_", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   UpdateProjectDto: {
@@ -486,9 +511,57 @@ const models: TsoaRoute.Models = {
         array: { dataType: "refObject", ref: "StoryDetails" },
         required: true,
       },
-      progressDatas: {
-        dataType: "array",
-        array: { dataType: "refObject", ref: "ProgressData" },
+    },
+    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  DailyTestProgress: {
+    dataType: "refAlias",
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        storyProgresses: {
+          dataType: "array",
+          array: {
+            dataType: "nestedObjectLiteral",
+            nestedProperties: {
+              incompletedSessionNumber: { dataType: "double", required: true },
+              completedSessionNumber: { dataType: "double", required: true },
+              plannedSessionNumber: { dataType: "double", required: true },
+              viewPointId: { dataType: "string", required: true },
+              testTargetId: { dataType: "string", required: true },
+              testTargetGroupId: { dataType: "string", required: true },
+              testMatrixId: { dataType: "string", required: true },
+              storyId: { dataType: "string", required: true },
+            },
+          },
+          required: true,
+        },
+        date: { dataType: "string", required: true },
+      },
+      validators: {},
+    },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  GetTestProgressResponse: {
+    dataType: "refAlias",
+    type: { ref: "DailyTestProgress", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  TestScriptGenerationOption: {
+    dataType: "refObject",
+    properties: {
+      testScript: {
+        dataType: "nestedObjectLiteral",
+        nestedProperties: { isSimple: { dataType: "boolean", required: true } },
+        required: true,
+      },
+      testData: {
+        dataType: "nestedObjectLiteral",
+        nestedProperties: {
+          maxGeneration: { dataType: "double", required: true },
+          useDataDriven: { dataType: "boolean", required: true },
+        },
         required: true,
       },
     },
@@ -496,50 +569,8 @@ const models: TsoaRoute.Models = {
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   CreateTestScriptDto: {
-    dataType: "refObject",
-    properties: {
-      pageObjects: {
-        dataType: "array",
-        array: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            script: { dataType: "string", required: true },
-            name: { dataType: "string", required: true },
-          },
-        },
-        required: true,
-      },
-      testData: {
-        dataType: "array",
-        array: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            testData: { dataType: "string", required: true },
-            name: { dataType: "string", required: true },
-          },
-        },
-        required: true,
-      },
-      testSuite: {
-        dataType: "nestedObjectLiteral",
-        nestedProperties: {
-          spec: { dataType: "string", required: true },
-          name: { dataType: "string", required: true },
-        },
-        required: true,
-      },
-      others: {
-        dataType: "array",
-        array: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            script: { dataType: "string", required: true },
-            name: { dataType: "string", required: true },
-          },
-        },
-      },
-    },
-    additionalProperties: false,
+    dataType: "refAlias",
+    type: { ref: "TestScriptGenerationOption", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   PatchSessionResponse: {
@@ -803,20 +834,26 @@ const models: TsoaRoute.Models = {
                 url: { dataType: "string", required: true },
                 title: { dataType: "string", required: true },
                 elementInfo: {
-                  dataType: "nestedObjectLiteral",
-                  nestedProperties: {
-                    attributes: {
+                  dataType: "union",
+                  subSchemas: [
+                    {
                       dataType: "nestedObjectLiteral",
-                      nestedProperties: {},
-                      additionalProperties: { dataType: "string" },
-                      required: true,
+                      nestedProperties: {
+                        attributes: {
+                          dataType: "nestedObjectLiteral",
+                          nestedProperties: {},
+                          additionalProperties: { dataType: "string" },
+                          required: true,
+                        },
+                        checked: { dataType: "boolean", required: true },
+                        value: { dataType: "string", required: true },
+                        xpath: { dataType: "string", required: true },
+                        text: { dataType: "string", required: true },
+                        tagname: { dataType: "string", required: true },
+                      },
                     },
-                    checked: { dataType: "boolean", required: true },
-                    value: { dataType: "string", required: true },
-                    xpath: { dataType: "string", required: true },
-                    text: { dataType: "string", required: true },
-                    tagname: { dataType: "string", required: true },
-                  },
+                    { dataType: "enum", enums: [null] },
+                  ],
                   required: true,
                 },
                 type: { dataType: "string", required: true },
@@ -1871,6 +1908,44 @@ export function RegisterRoutes(app: express.Router) {
         const controller = new ProjectsController();
 
         const promise = controller.update.apply(
+          controller,
+          validatedArgs as any
+        );
+        promiseHandler(controller, promise, response, undefined, next);
+      } catch (err) {
+        return next(err);
+      }
+    }
+  );
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  app.get(
+    "/api/v1/projects/:projectId/progress",
+
+    function ProjectsController_getTestProgress(
+      request: any,
+      response: any,
+      next: any
+    ) {
+      const args = {
+        projectId: {
+          in: "path",
+          name: "projectId",
+          required: true,
+          dataType: "string",
+        },
+        since: { in: "query", name: "since", dataType: "double" },
+        until: { in: "query", name: "until", dataType: "double" },
+      };
+
+      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+      let validatedArgs: any[] = [];
+      try {
+        validatedArgs = getValidatedArgs(args, request, response);
+
+        const controller = new ProjectsController();
+
+        const promise = controller.getTestProgress.apply(
           controller,
           validatedArgs as any
         );

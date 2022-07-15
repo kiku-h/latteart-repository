@@ -64,7 +64,7 @@ interface TestStep {
   operation: {
     input: string;
     type: string;
-    elementInfo: ElementInfo;
+    elementInfo: ElementInfo | null;
     title: string;
     url: string;
     imageFileUrl: string;

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { ScreenDefinitionConfig } from "@/lib/ScreenDefFactory";
+
 export type PutConfigDto = GetConfigResponse;
 
 export type PutConfigResponse = GetConfigResponse;
@@ -36,18 +38,7 @@ export interface GetConfigResponse {
   }>;
   defaultTagList: string[];
   config: {
-    screenDefinition: {
-      screenDefType: string;
-      conditionGroups: {
-        isEnabled: boolean;
-        screenName: string;
-        conditions: {
-          isEnabled: boolean;
-          definitionType: "url" | "title" | "keyword";
-          word: string;
-        };
-      }[];
-    };
+    screenDefinition: ScreenDefinitionConfig;
     exclusionElements: {
       tags: string[];
     };

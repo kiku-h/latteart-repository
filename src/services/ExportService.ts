@@ -43,7 +43,7 @@ export type HistoryItemExportDataV1 = {
         attributes: {
           [key: string]: string;
         };
-      };
+      } | null;
     };
     inputElements: {
       tagname: string;
@@ -126,9 +126,8 @@ export class ExportServiceImpl implements ExportService {
   ): Promise<{ url: string }> {
     console.log(testResultId);
 
-    const screenshots = await this.service.testResult.collectAllTestStepScreenshots(
-      testResultId
-    );
+    const screenshots =
+      await this.service.testResult.collectAllTestStepScreenshots(testResultId);
 
     const testResult = await this.service.testResult.getTestResult(
       testResultId

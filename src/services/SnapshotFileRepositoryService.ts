@@ -20,7 +20,7 @@ import { TimestampService } from "./TimestampService";
 import FileArchiver from "@/lib/FileArchiver";
 import { StaticDirectoryService } from "./StaticDirectoryService";
 import os from "os";
-import { ProgressData, Project } from "@/interfaces/Projects";
+import { Project } from "@/interfaces/Projects";
 import { TestResultService } from "./TestResultService";
 import { ConfigsService } from "./ConfigsService";
 import { TestStepService } from "./TestStepService";
@@ -28,6 +28,7 @@ import { NotesServiceImpl } from "./NotesService";
 import { TestPurposeServiceImpl } from "./TestPurposeService";
 import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { IssueReportService } from "./IssueReportService";
+import { DailyTestProgress, TestProgressService } from "./TestProgressService";
 
 export interface SnapshotFileRepositoryService {
   write(project: Project): Promise<string>;
@@ -48,6 +49,7 @@ export class SnapshotFileRepositoryServiceImpl
       config: ConfigsService;
       issueReport: IssueReportService;
       attachedFileRepository: StaticDirectoryService;
+      testProgress: TestProgressService;
     },
     private template: {
       snapshotViewer: {
@@ -96,7 +98,6 @@ export class SnapshotFileRepositoryServiceImpl
     const projectData = {
       testMatrices: project.testMatrices,
       stories,
-      progressDatas: project.progressDatas,
     };
 
     // copy contents of "snapshot-viewer"
@@ -137,6 +138,13 @@ export class SnapshotFileRepositoryServiceImpl
         }
       }
     }
+
+    // output progress file
+    const dailyProgresses =
+      await this.service.testProgress.collectDailyTestProgresses(
+        stories.map((story) => story.id)
+      );
+    await this.outputTestProgressFile(destDataDirPath, dailyProgresses);
   }
 
   private async copyAttachments(
@@ -574,12 +582,22 @@ export class SnapshotFileRepositoryServiceImpl
           testingTime: number;
         }[];
       }[];
-      progressDatas: ProgressData[];
     }
   ) {
     await fs.outputFile(
       path.join(outputDirPath, "project.js"),
       `const snapshot = ${JSON.stringify(projectData)}`,
+      { encoding: "utf-8" }
+    );
+  }
+
+  private async outputTestProgressFile(
+    outputDirPath: string,
+    dailyProgresses: DailyTestProgress[]
+  ) {
+    await fs.outputFile(
+      path.join(outputDirPath, "progress.js"),
+      `const dailyTestProgresses = ${JSON.stringify(dailyProgresses)}`,
       { encoding: "utf-8" }
     );
   }

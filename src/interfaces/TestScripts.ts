@@ -14,18 +14,6 @@
  * limitations under the License.
  */
 
-export interface CreateTestScriptDto {
-  pageObjects: {
-    name: string;
-    script: string;
-  }[];
-  testData: {
-    name: string;
-    testData: string;
-  }[];
-  testSuite: {
-    name: string;
-    spec: string;
-  };
-  others?: { name: string; script: string }[];
-}
+import { TestScriptGenerationOption } from "../lib/scriptGenerator/TestScriptGenerator";
+
+export type CreateTestScriptDto = TestScriptGenerationOption;

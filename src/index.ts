@@ -31,7 +31,7 @@ import {
   deviceConfigFilePath,
   publicDirPath,
 } from "./common";
-import { createConnection, getConnectionOptions, getRepository } from "typeorm";
+import { createConnection, getConnectionOptions } from "typeorm";
 import { NoteEntity } from "./entities/NoteEntity";
 import { TagEntity } from "./entities/TagEntity";
 import fs from "fs-extra";
@@ -66,7 +66,6 @@ import { UpdateViewPointEntity1655772848395 } from "./migrations/1655772848395-U
 import { UpdateSessionEntity1656305325919 } from "./migrations/1656305325919-UpdateSessionEntity";
 import { TestProgressEntity } from "./entities/TestProgressEntity";
 import { AddTestProgressEntity1657768635961 } from "./migrations/1657768635961-AddTestProgressEntity";
-import { unixtimeToDate } from "./lib/timeUtil";
 
 LoggingService.initialize(
   new StandardLogger(

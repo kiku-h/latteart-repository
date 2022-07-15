@@ -15,6 +15,7 @@
  */
 
 import { StoryEntity } from "@/entities/StoryEntity";
+import { TestProgressEntity } from "@/entities/TestProgressEntity";
 import { TestTargetEntity } from "@/entities/TestTargetEntity";
 import { TestTargetGroupEntity } from "@/entities/TestTargetGroupEntity";
 import { TestTarget } from "@/interfaces/TestTargets";
@@ -121,7 +122,6 @@ export class TestTargetService {
             const targetStory = testTarget?.stories.find((story) => {
               return story.viewPointId === newPlan.viewPointId;
             });
-            console.log(targetStory);
             if (!targetStory) {
               return;
             }
@@ -132,6 +132,26 @@ export class TestTargetService {
             if (targetStory.status === "ng" && newPlan.value === 0) {
               targetStory.status = "out-of-scope";
               await transactionalEntityManager.save(targetStory);
+            }
+
+            const progress = await transactionalEntityManager.findOne(
+              TestProgressEntity,
+              targetStory.id
+            );
+            if (progress) {
+              if (progress?.plannedSessionNumber !== newPlan.value) {
+                progress.plannedSessionNumber = newPlan.value;
+                progress.date = new Date();
+                await transactionalEntityManager.save(progress);
+              }
+            } else {
+              const newProgress = new TestProgressEntity();
+              newProgress.plannedSessionNumber = newPlan.value;
+              newProgress.completedSessionNumber = 0;
+              newProgress.incompletedSessionNumber = 0;
+              newProgress.story = targetStory;
+              newProgress.date = new Date();
+              await transactionalEntityManager.save(newProgress);
             }
           })
         );

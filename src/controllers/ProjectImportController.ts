@@ -98,6 +98,7 @@ export class ProjectImportController extends Controller {
       });
 
       const testResultService = new TestResultServiceImpl({
+        staticDirectory: tempDirectoryService,
         timestamp: timestampService,
         testStep: testStepService,
       });

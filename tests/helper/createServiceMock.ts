@@ -39,6 +39,7 @@ export const createTestResultServiceMock = (): TestResultService => {
     collectAllTestStepIds: jest.fn(),
     collectAllTestPurposeIds: jest.fn(),
     collectAllTestStepScreenshots: jest.fn(),
+    compareTestResults: jest.fn(),
   };
 };
 
@@ -50,6 +51,7 @@ export const createTestStepServiceMock = (): TestStepService => {
     attachTestPurposeToTestStep: jest.fn(),
     getTestStepOperation: jest.fn(),
     getTestStepScreenshot: jest.fn(),
+    compareTestSteps: jest.fn(),
   };
 };
 

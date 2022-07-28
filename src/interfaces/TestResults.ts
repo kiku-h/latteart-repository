@@ -18,12 +18,10 @@ export interface CreateTestResultDto {
   initialUrl?: string;
   name?: string;
   startTimeStamp?: number;
+  source?: string;
 }
 
-export interface ListTestResultResponse {
-  id: string;
-  name: string;
-}
+export type ListTestResultResponse = Pick<TestResult, "id" | "name" | "source">;
 
 export interface CreateTestResultResponse {
   id: string;
@@ -39,6 +37,7 @@ interface TestResult {
   startTimeStamp: number;
   endTimeStamp: number;
   initialUrl: string;
+  source?: string;
   testSteps: {
     id: string;
     operation: {

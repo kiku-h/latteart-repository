@@ -49,6 +49,7 @@ import { TestStepsController } from "./../controllers/TestStepsController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ScreenshotsController } from "./../controllers/ScreenshotsController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { TestResultDiffController } from "./../controllers/TestResultDiffController";
 import { TestMatricesController } from "./../controllers/TestMatricesController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { TestTargetGroupsController } from "./../controllers/TestTargetGroupsController";
@@ -722,13 +723,22 @@ const models: TsoaRoute.Models = {
     additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  ListTestResultResponse: {
-    dataType: "refObject",
-    properties: {
-      id: { dataType: "string", required: true },
-      name: { dataType: "string", required: true },
+  "Pick_TestResult.id-or-name-or-source_": {
+    dataType: "refAlias",
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        id: { dataType: "string", required: true },
+        name: { dataType: "string", required: true },
+        source: { dataType: "string" },
+      },
+      validators: {},
     },
-    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  ListTestResultResponse: {
+    dataType: "refAlias",
+    type: { ref: "Pick_TestResult.id-or-name-or-source_", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   TestResult: {
@@ -739,6 +749,7 @@ const models: TsoaRoute.Models = {
       startTimeStamp: { dataType: "double", required: true },
       endTimeStamp: { dataType: "double", required: true },
       initialUrl: { dataType: "string", required: true },
+      source: { dataType: "string" },
       testSteps: {
         dataType: "array",
         array: {
@@ -952,6 +963,7 @@ const models: TsoaRoute.Models = {
       initialUrl: { dataType: "string" },
       name: { dataType: "string" },
       startTimeStamp: { dataType: "double" },
+      source: { dataType: "string" },
     },
     additionalProperties: false,
   },
@@ -3194,6 +3206,52 @@ export function RegisterRoutes(app: express.Router) {
         const controller = new ViewPointsController();
 
         const promise = controller.delete.apply(
+          controller,
+          validatedArgs as any
+        );
+        promiseHandler(controller, promise, response, undefined, next);
+      } catch (err) {
+        return next(err);
+      }
+    }
+  );
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  app.post(
+    "/api/v1/test-results/:testResultId/diffs",
+
+    function TestResultDiffController_create(
+      request: any,
+      response: any,
+      next: any
+    ) {
+      const args = {
+        testResultId: {
+          in: "path",
+          name: "testResultId",
+          required: true,
+          dataType: "string",
+        },
+        requestBody: {
+          in: "body",
+          name: "requestBody",
+          required: true,
+          dataType: "nestedObjectLiteral",
+          nestedProperties: {
+            excludeQuery: { dataType: "string" },
+            targetTestResultId: { dataType: "string", required: true },
+          },
+        },
+      };
+
+      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+      let validatedArgs: any[] = [];
+      try {
+        validatedArgs = getValidatedArgs(args, request, response);
+
+        const controller = new TestResultDiffController();
+
+        const promise = controller.create.apply(
           controller,
           validatedArgs as any
         );

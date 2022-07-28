@@ -64,6 +64,7 @@ export type TestResultExportDataV1 = {
   version: number;
   name: string;
   sessionId: string;
+  source: string;
   startTimeStamp: number;
   endTimeStamp: number;
   initialUrl: string;
@@ -222,6 +223,7 @@ export class ExportServiceImpl implements ExportService {
       version: 1,
       name: testResult.name,
       sessionId: testResult.id,
+      source: testResult.source ?? "",
       startTimeStamp: testResult.startTimeStamp,
       endTimeStamp: testResult.endTimeStamp,
       initialUrl: testResult.initialUrl,

@@ -61,7 +61,7 @@ interface CapturedOperation {
   pageSource: string;
 }
 
-interface Operation {
+export interface Operation {
   input: string;
   type: string;
   elementInfo: ElementInfo | null;
@@ -74,7 +74,7 @@ interface Operation {
   keywordTexts?: string[];
 }
 
-interface TestStep {
+export interface TestStep {
   id: string;
   operation: Operation;
   intention: string | null;

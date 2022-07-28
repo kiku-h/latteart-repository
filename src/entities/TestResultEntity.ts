@@ -46,6 +46,9 @@ export class TestResultEntity {
   @Column({ name: "initial_url" })
   initialUrl: string = "";
 
+  @Column({ name: "source", nullable: true })
+  source!: string;
+
   @OneToMany(() => SessionEntity, (session) => session.testResult)
   sessions?: SessionEntity[];
 

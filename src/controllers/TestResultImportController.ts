@@ -88,6 +88,7 @@ export class TestResultImportController extends Controller {
     });
 
     const testResultService = new TestResultServiceImpl({
+      staticDirectory: tempDirectoryService,
       timestamp: timestampService,
       testStep: new TestStepServiceImpl({
         imageFileRepository: imageFileRepositoryService,

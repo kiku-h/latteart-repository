@@ -192,6 +192,7 @@ const deserializeTestResultV1 = (
   const testResult = {
     id: testResultImportData.sessionId,
     name: testResultImportData.name,
+    source: testResultImportData.source ?? "",
     startTimeStamp: testResultImportData.startTimeStamp,
     endTimeStamp: testResultImportData.endTimeStamp,
     initialUrl: testResultImportData.initialUrl,

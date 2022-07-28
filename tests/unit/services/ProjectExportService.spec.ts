@@ -62,6 +62,7 @@ describe("ProjectExportService", () => {
           fileUrl: "fileUrl",
         },
       ]),
+      compareTestResults: jest.fn(),
     };
 
     const exportFileRepositoryService: ExportFileRepositoryService = {

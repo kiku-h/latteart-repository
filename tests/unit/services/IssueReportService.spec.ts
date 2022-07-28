@@ -42,6 +42,7 @@ describe("IssueReportService", () => {
         collectAllTestStepIds: jest.fn().mockResolvedValue(expectedTestStepIds),
         collectAllTestPurposeIds: jest.fn(),
         collectAllTestStepScreenshots: jest.fn(),
+        compareTestResults: jest.fn(),
       };
 
       const testStepService: TestStepService = {
@@ -54,6 +55,7 @@ describe("IssueReportService", () => {
         attachTestPurposeToTestStep: jest.fn(),
         getTestStepOperation: jest.fn(),
         getTestStepScreenshot: jest.fn(),
+        compareTestSteps: jest.fn(),
       };
 
       const testPurposeService: any = {

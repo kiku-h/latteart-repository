@@ -25,6 +25,7 @@ import {
   CreateTestStepResponse,
   PatchTestStepResponse,
   ElementInfo,
+  Operation,
 } from "@/interfaces/TestSteps";
 import { getRepository } from "typeorm";
 import { TimestampService } from "./TimestampService";
@@ -32,6 +33,11 @@ import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
 import { DefaultInputElementEntity } from "@/entities/DefaultInputElementEntity";
 import { ConfigsService } from "./ConfigsService";
+import {
+  DiffCheckFunction,
+  OperationDiffChecker,
+} from "@/lib/OperationDiffChecker";
+import LoggingService from "@/logger/LoggingService";
 
 export interface TestStepService {
   getTestStep(testStepId: string): Promise<GetTestStepResponse>;
@@ -51,9 +57,7 @@ export interface TestStepService {
     testPurposeId: string | null
   ): Promise<PatchTestStepResponse>;
 
-  getTestStepOperation(
-    testStepId: string
-  ): Promise<{
+  getTestStepOperation(testStepId: string): Promise<{
     input: string;
     type: string;
     elementInfo: any;
@@ -69,6 +73,14 @@ export interface TestStepService {
   getTestStepScreenshot(
     testStepId: string
   ): Promise<{ id: string; fileUrl: string }>;
+
+  compareTestSteps(
+    testStepId1: string,
+    testStepId2: string,
+    option?: Partial<{ excludeParamNames: string[] }>
+  ): Promise<{
+    [key: string]: { a: string | undefined; b: string | undefined };
+  }>;
 }
 
 export class TestStepServiceImpl implements TestStepService {
@@ -97,11 +109,10 @@ export class TestStepServiceImpl implements TestStepService {
       relations: ["coverageSources"],
     });
 
-    const {
-      defaultInputElements: defaultInputElementsEntity,
-    } = await getRepository(TestResultEntity).findOneOrFail(testResultId, {
-      relations: ["defaultInputElements"],
-    });
+    const { defaultInputElements: defaultInputElementsEntity } =
+      await getRepository(TestResultEntity).findOneOrFail(testResultId, {
+        relations: ["defaultInputElements"],
+      });
 
     const targetCoverageSource = testResultEntity.coverageSources?.find(
       (coverageSource) => {
@@ -180,9 +191,11 @@ export class TestStepServiceImpl implements TestStepService {
     );
 
     // result coverage source.
-    const savedCoverageSourceEntity = savedTestResultEntity.coverageSources?.find(
-      ({ url, title }) => url === requestBody.url && title === requestBody.title
-    );
+    const savedCoverageSourceEntity =
+      savedTestResultEntity.coverageSources?.find(
+        ({ url, title }) =>
+          url === requestBody.url && title === requestBody.title
+      );
     const coverageSource = {
       title: savedCoverageSourceEntity?.title ?? "",
       url: savedCoverageSourceEntity?.url ?? "",
@@ -250,9 +263,7 @@ export class TestStepServiceImpl implements TestStepService {
     return this.convertTestStepEntityToTestStep(updatedTestStepEntity);
   }
 
-  public async getTestStepOperation(
-    testStepId: string
-  ): Promise<{
+  public async getTestStepOperation(testStepId: string): Promise<{
     input: string;
     type: string;
     elementInfo: any;
@@ -288,6 +299,36 @@ export class TestStepServiceImpl implements TestStepService {
       id: testStepEntity?.screenshot?.id ?? "",
       fileUrl: testStepEntity?.screenshot?.fileUrl ?? "",
     };
+  }
+
+  public async compareTestSteps(
+    testStepId1: string,
+    testStepId2: string,
+    option: Partial<{ excludeParamNames: string[] }> = {}
+  ): Promise<{
+    [key: string]: { a: string | undefined; b: string | undefined };
+  }> {
+    const testStep1 = await this.getTestStep(testStepId1).catch((error) => {
+      LoggingService.warn(error);
+      return undefined;
+    });
+    const testStep2 = await this.getTestStep(testStepId2).catch((error) => {
+      LoggingService.warn(error);
+      return undefined;
+    });
+
+    const paramNameToOptions: [
+      paramName: keyof Operation,
+      options: { name?: string; func?: DiffCheckFunction }
+    ][] =
+      option.excludeParamNames?.map((paramName) => {
+        return [paramName as keyof Operation, { func: () => undefined }];
+      }) ?? [];
+
+    return new OperationDiffChecker(...paramNameToOptions).diff(
+      testStep1?.operation,
+      testStep2?.operation
+    );
   }
 
   private async getOperationFromTestStepEntity(testStepEntity: TestStepEntity) {

@@ -69,6 +69,7 @@ describe("TestScriptsService", () => {
         collectAllTestStepIds: jest.fn(),
         collectAllTestPurposeIds: jest.fn(),
         collectAllTestStepScreenshots: jest.fn(),
+        compareTestResults: jest.fn(),
       };
       emptyTestScriptFileRepositoryService = {
         write: jest.fn().mockResolvedValue("url"),

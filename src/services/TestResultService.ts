@@ -31,10 +31,16 @@ import {
 } from "@/interfaces/TestResults";
 import { TransactionRunner } from "@/TransactionRunner";
 import { getRepository } from "typeorm";
-import { StaticDirectoryServiceImpl } from "./StaticDirectoryService";
+import {
+  StaticDirectoryService,
+  StaticDirectoryServiceImpl,
+} from "./StaticDirectoryService";
 import { TestStepService } from "./TestStepService";
 import { TimestampService } from "./TimestampService";
 import path from "path";
+import fs from "fs-extra";
+import os from "os";
+import FileArchiver from "@/lib/FileArchiver";
 
 export interface TestResultService {
   getTestResultIdentifiers(): Promise<ListTestResultResponse[]>;
@@ -60,11 +66,27 @@ export interface TestResultService {
   collectAllTestStepScreenshots(
     testResultId: string
   ): Promise<{ id: string; fileUrl: string }[]>;
+
+  compareTestResults(
+    testResultId1: string,
+    testResultId2: string,
+    option?: Partial<{ excludeParamNames: string[] }>
+  ): Promise<{
+    diffs: {
+      [key: string]: {
+        a: string | undefined;
+        b: string | undefined;
+      };
+    }[];
+    isSame: boolean;
+    url: string;
+  }>;
 }
 
 export class TestResultServiceImpl implements TestResultService {
   constructor(
     private service: {
+      staticDirectory: StaticDirectoryService;
       timestamp: TimestampService;
       testStep: TestStepService;
     }
@@ -77,6 +99,7 @@ export class TestResultServiceImpl implements TestResultService {
       return {
         id: testResult.id,
         name: testResult.name,
+        source: testResult.source,
       };
     });
   }
@@ -139,6 +162,7 @@ export class TestResultServiceImpl implements TestResultService {
       startTimestamp,
       endTimestamp,
       initialUrl: body.initialUrl ?? "",
+      source: body.source ?? "",
       testSteps: [],
       coverageSources: [],
       defaultInputElements: [],
@@ -317,6 +341,70 @@ export class TestResultServiceImpl implements TestResultService {
     return screenshots;
   }
 
+  public async compareTestResults(
+    testResultId1: string,
+    testResultId2: string,
+    option: Partial<{ excludeParamNames: string[] }> = {}
+  ): Promise<{
+    diffs: {
+      [key: string]: {
+        a: string | undefined;
+        b: string | undefined;
+      };
+    }[];
+    isSame: boolean;
+    url: string;
+  }> {
+    const testStepIds1 = await this.collectAllTestStepIds(testResultId1);
+    const testStepIds2 = await this.collectAllTestStepIds(testResultId2);
+
+    const length =
+      testStepIds1.length > testStepIds2.length
+        ? testStepIds1.length
+        : testStepIds2.length;
+
+    const diffs = await Promise.all(
+      Array(length)
+        .fill("")
+        .map(async (_, index) => {
+          const testStepId1 = testStepIds1[index] ?? "";
+          const testStepId2 = testStepIds2[index] ?? "";
+
+          return this.service.testStep.compareTestSteps(
+            testStepId1,
+            testStepId2,
+            option
+          );
+        })
+    );
+
+    const isDifferent = diffs.some((diff) => JSON.stringify(diff) !== "{}");
+    const timestamp = this.service.timestamp.format("YYYYMMDD_HHmmss");
+
+    const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "latteart-"));
+
+    const outputDirectoryPath = path.join(tmpDirPath, `compare_${timestamp}`);
+    const outputPath = path.join(outputDirectoryPath, `diffs.json`);
+
+    await fs.outputFile(outputPath, JSON.stringify(diffs));
+
+    const zipFilePath = await new FileArchiver(outputDirectoryPath, {
+      deleteSource: true,
+    }).zip();
+
+    const zipFileName = path.basename(zipFilePath);
+
+    await this.service.staticDirectory.moveFile(zipFilePath, zipFileName);
+
+    const data = {
+      diffs,
+      isSame: !isDifferent,
+      url: this.service.staticDirectory.getFileUrl(zipFileName),
+    };
+
+    return data;
+  }
+
   private async convertTestResultEntityToTestResult(
     testResultEntity: TestResultEntity
   ) {
@@ -385,6 +473,7 @@ export class TestResultServiceImpl implements TestResultService {
     return {
       id: testResultEntity.id,
       name: testResultEntity.name,
+      source: testResultEntity.source,
       startTimeStamp: testResultEntity.startTimestamp,
       endTimeStamp: testResultEntity.endTimestamp,
       initialUrl: testResultEntity.initialUrl,

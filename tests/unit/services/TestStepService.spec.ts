@@ -1,6 +1,9 @@
 import { TestResultEntity } from "@/entities/TestResultEntity";
 import { TestStepEntity } from "@/entities/TestStepEntity";
-import { TestStepServiceImpl } from "@/services/TestStepService";
+import {
+  TestStepService,
+  TestStepServiceImpl,
+} from "@/services/TestStepService";
 import { ImageFileRepositoryService } from "@/services/ImageFileRepositoryService";
 import { TimestampService } from "@/services/TimestampService";
 import { ConfigsService } from "@/services/ConfigsService";
@@ -152,6 +155,165 @@ describe("TestStepService", () => {
         intention: null,
         bugs: [],
         notices: [],
+      });
+    });
+  });
+
+  describe("#compareTestSteps", () => {
+    let testStepService: TestStepService;
+
+    beforeEach(() => {
+      const imageFileRepositoryService: ImageFileRepositoryService = {
+        writeBufferToFile: jest.fn(),
+        writeBase64ToFile: jest.fn().mockResolvedValue("testStep.png"),
+        removeFile: jest.fn(),
+        getFilePath: jest.fn(),
+        getFileUrl: jest.fn(),
+      };
+
+      const timestampService: TimestampService = {
+        unix: jest.fn().mockReturnValue(0),
+        format: jest.fn(),
+        epochMilliseconds: jest.fn(),
+      };
+
+      testStepService = new TestStepServiceImpl({
+        imageFileRepository: imageFileRepositoryService,
+        timestamp: timestampService,
+        config: new ConfigsService(),
+      });
+    });
+
+    describe("2つのテストステップの差分を抽出する", () => {
+      const baseRequestBody: CreateTestStepDto = {
+        input: "",
+        type: "",
+        elementInfo: null,
+        title: "",
+        url: "",
+        imageData: "",
+        windowHandle: "",
+        screenElements: [],
+        inputElements: [],
+        keywordTexts: [],
+        timestamp: 0,
+        pageSource: "",
+      };
+
+      let testResultId: string;
+
+      beforeEach(async () => {
+        const testResultEntity = await getRepository(TestResultEntity).save(
+          new TestResultEntity()
+        );
+        testResultId = testResultEntity.id;
+      });
+
+      it("テストステップ内の操作の各パラメータを比較する", async () => {
+        const requestBody1: CreateTestStepDto = {
+          ...baseRequestBody,
+          keywordTexts: ["aaa", "bbb", "ccc"],
+        };
+        const requestBody2: CreateTestStepDto = {
+          ...baseRequestBody,
+          keywordTexts: ["aaa", "bbb", "ddd"],
+        };
+
+        const testStep1 = await testStepService.createTestStep(
+          testResultId,
+          requestBody1
+        );
+        const testStep2 = await testStepService.createTestStep(
+          testResultId,
+          requestBody2
+        );
+
+        expect(
+          await testStepService.compareTestSteps(testStep1.id, testStep2.id)
+        ).toEqual({
+          keywordTexts: {
+            a: '["aaa","bbb","ccc"]',
+            b: '["aaa","bbb","ddd"]',
+          },
+        });
+
+        expect(
+          await testStepService.compareTestSteps(testStep1.id, testStep1.id)
+        ).toEqual({});
+      });
+
+      it("指定のテストステップIDに対応するテストステップがない場合は操作の各パラメータをundefinedとみなして比較する", async () => {
+        const testStep = await testStepService.createTestStep(
+          testResultId,
+          baseRequestBody
+        );
+
+        expect(
+          await testStepService.compareTestSteps(testStep.id, "unknownId")
+        ).toEqual({
+          input: {
+            a: "",
+            b: undefined,
+          },
+          type: {
+            a: "",
+            b: undefined,
+          },
+          elementInfo: {
+            a: "null",
+            b: undefined,
+          },
+          title: {
+            a: "",
+            b: undefined,
+          },
+          url: {
+            a: "",
+            b: undefined,
+          },
+          windowHandle: {
+            a: "",
+            b: undefined,
+          },
+          keywordTexts: {
+            a: "[]",
+            b: undefined,
+          },
+        });
+
+        expect(
+          await testStepService.compareTestSteps("unknownId", "unknownId")
+        ).toEqual({});
+      });
+
+      it("オプションで無視するパラメータ名が指定されていた場合は、そのパラメータを比較対象から除外する", async () => {
+        const requestBody1: CreateTestStepDto = {
+          ...baseRequestBody,
+          keywordTexts: ["aaa", "bbb", "ccc"],
+        };
+        const requestBody2: CreateTestStepDto = {
+          ...baseRequestBody,
+          keywordTexts: ["aaa", "bbb", "ddd"],
+        };
+
+        const testStep1 = await testStepService.createTestStep(
+          testResultId,
+          requestBody1
+        );
+        const testStep2 = await testStepService.createTestStep(
+          testResultId,
+          requestBody2
+        );
+
+        const option = { excludeParamNames: ["keywordTexts"] };
+
+        expect(
+          await testStepService.compareTestSteps(
+            testStep1.id,
+            testStep2.id,
+            option
+          )
+        ).toEqual({});
       });
     });
   });

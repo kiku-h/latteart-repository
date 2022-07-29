@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+export type PostSessionResponse = Session;
+export type PatchSessionResponse = Session;
+
 export interface PatchSessionDto {
   attachedFiles?: {
     name: string;
@@ -26,9 +29,13 @@ export interface PatchSessionDto {
     details: string;
     source: {
       index: number;
-      sequence: number;
       type: string;
     };
+    status: string;
+    ticketId: string;
+    type: string;
+    value: string;
+    imageFilePath?: string;
   }[];
   memo?: string;
   name?: string;
@@ -41,7 +48,9 @@ export interface PatchSessionDto {
   testingTime?: number;
 }
 
-export interface PatchSessionResponse {
+export type Session = {
+  index: number;
+  id: string;
   attachedFiles: {
     name: string;
     fileUrl: string;
@@ -52,13 +61,13 @@ export interface PatchSessionResponse {
     details: string;
     source: {
       index: number;
-      sequence: number;
       type: string;
     };
     status: string;
-    tickedId: string;
+    ticketId: string;
     type: string;
     value: string;
+    imageFilePath?: string;
   }[];
   memo: string;
   name: string;
@@ -69,4 +78,4 @@ export interface PatchSessionResponse {
   }[];
   testerName: string;
   testingTime: number;
-}
+};

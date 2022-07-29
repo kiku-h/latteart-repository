@@ -18,14 +18,36 @@ import LoggingService from "@/logger/LoggingService";
 import { ServerError, ServerErrorCode } from "@/ServerError";
 import { ImageFileRepositoryServiceImpl } from "@/services/ImageFileRepositoryService";
 import { TimestampServiceImpl } from "@/services/TimestampService";
-import { Controller, Body, Patch, Route, Path } from "tsoa";
+import { Controller, Body, Patch, Route, Path, Post, Delete } from "tsoa";
 import { attachedFileDirectoryService } from "..";
 
-import { PatchSessionDto, PatchSessionResponse } from "../interfaces/Sessions";
+import {
+  PatchSessionDto,
+  PatchSessionResponse,
+  PostSessionResponse,
+} from "../interfaces/Sessions";
 import { SessionsService } from "../services/SessionsService";
 
 @Route("projects/{projectId}/sessions")
 export class SessionsController extends Controller {
+  @Post("")
+  public async post(
+    @Body() requestBody: { storyId: string }
+  ): Promise<PostSessionResponse> {
+    try {
+      return await new SessionsService().postSession(requestBody.storyId);
+    } catch (error) {
+      if (error instanceof Error) {
+        LoggingService.error("Post session failed.", error);
+
+        throw new ServerError(500, {
+          code: ServerErrorCode.POST_SESSION_FAILED,
+        });
+      }
+      throw error;
+    }
+  }
+
   @Patch("{sessionId}")
   public async patch(
     @Path() projectId: string,
@@ -37,16 +59,41 @@ export class SessionsController extends Controller {
     });
 
     try {
-      return await new SessionsService({
-        timestampService: new TimestampServiceImpl(),
-        imageFileRepositoryService: imageFileRepositoryService,
-      }).patchSession(projectId, sessionId, requestBody);
+      return await new SessionsService().patchSession(
+        projectId,
+        sessionId,
+        requestBody,
+        {
+          timestampService: new TimestampServiceImpl(),
+          imageFileRepositoryService: imageFileRepositoryService,
+        }
+      );
     } catch (error) {
       if (error instanceof Error) {
         LoggingService.error("Patch session failed.", error);
 
         throw new ServerError(500, {
           code: ServerErrorCode.PATCH_SESSION_FAILED,
+        });
+      }
+      throw error;
+    }
+  }
+
+  @Delete("{sessionId}")
+  public async delete(
+    @Path() projectId: string,
+    @Path() sessionId: string
+  ): Promise<void> {
+    try {
+      await new SessionsService().deleteSession(sessionId);
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        LoggingService.error("Delete session failed.", error);
+
+        throw new ServerError(500, {
+          code: ServerErrorCode.DELETE_SESSION_FAILED,
         });
       }
       throw error;

@@ -36,7 +36,9 @@ export enum ServerErrorCode {
   COMPRESS_TEST_STEP_IMAGE_FAILED = "compress_test_step_image_failed",
   UPDATE_TEST_RESULT_FAILED = "update_test_result_failed",
   DELETE_TEST_RESULT_FAILED = "delete_test_result_failed",
+  POST_SESSION_FAILED = "post_session_failed",
   PATCH_SESSION_FAILED = "patch_session_failed",
+  DELETE_SESSION_FAILED = "delete_session_failed",
   GET_SESSION_FAILED = "get_session_failed",
   GET_SERVERNAME_FAILED = "get_servername_failed",
   EXPORT_TEST_RESULT_FAILED = "export_test_result_failed",
@@ -66,6 +68,7 @@ export enum ServerErrorCode {
   DELETE_VIEW_POINT_FAILED = "delete_view_point_failed",
   NO_TEST_CASES_GENERATED = "no_test_cases_generated",
   GET_TEST_PROGRESS_FAILED = "get_test_progress_failed",
+  PATCH_STORY_FAILED = "patch_story_failed",
 }
 
 export interface ServerErrorData {

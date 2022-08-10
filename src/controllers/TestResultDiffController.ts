@@ -33,8 +33,8 @@ export class TestResultDiffController extends Controller {
   ): Promise<{
     diffs: {
       [key: string]: {
-        a: string | undefined;
-        b: string | undefined;
+        a?: string;
+        b?: string;
       };
     }[];
     isSame: boolean;

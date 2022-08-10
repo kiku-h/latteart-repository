@@ -14,6 +14,24 @@
  * limitations under the License.
  */
 
-import { TestScriptGenerationOption } from "../lib/scriptGenerator/TestScriptGenerator";
+type TestResultViewOption = {
+  node: {
+    unit: "title" | "url";
+    definitions: {
+      name: string;
+      conditions: {
+        target: "title" | "url" | "keyword";
+        method: "contains" | "equals" | "regex";
+        value: string;
+      }[];
+    }[];
+  };
+};
 
-export type CreateTestScriptDto = TestScriptGenerationOption;
+export type TestScriptOption = {
+  optimized: boolean;
+  testData: { useDataDriven: boolean; maxGeneration: number };
+  view: TestResultViewOption;
+};
+
+export type CreateTestScriptDto = TestScriptOption;

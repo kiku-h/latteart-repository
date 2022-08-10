@@ -63,7 +63,7 @@ interface ProjectData {
 
 export class ProjectImportService {
   public async import(
-    importFileName: string,
+    importFile: { data: string; name: string },
     includeProject: boolean,
     includeTestResults: boolean,
     service: {
@@ -79,22 +79,13 @@ export class ProjectImportService {
       transactionRunner: TransactionRunner;
     }
   ): Promise<{ projectId: string }> {
-    const files = await this.getFileData(
-      importFileName,
-      service.importDirectoryService
+    const { testResultFiles, projectFiles } = await this.readImportFile(
+      importFile.data,
+      {
+        includeProject,
+        includeTestResults,
+      }
     );
-    const testResultFiles = files.filter((file) => {
-      return file.filePath.includes("test-results");
-    });
-    if (includeTestResults && testResultFiles.length === 0) {
-      throw new Error("Test result information does not exist.");
-    }
-    const projectFiles = files.filter((file) => {
-      return file.filePath.includes("projects");
-    });
-    if (includeProject && projectFiles.length === 0) {
-      throw new Error("Project information does not exist.");
-    }
 
     let testResultIdMap: Map<string, string> = new Map();
     let projectId = "";
@@ -606,11 +597,38 @@ export class ProjectImportService {
     return testResultIdMap;
   }
 
-  private async getFileData(
-    importFileName: string,
-    importDirectoryService: StaticDirectoryService
+  private async readImportFile(
+    base64FileData: string,
+    option: {
+      includeProject: boolean;
+      includeTestResults: boolean;
+    }
   ) {
-    const importFilePath = importDirectoryService.getJoinedPath(importFileName);
-    return await readZip(importFilePath);
+    const decoded = Buffer.from(base64FileData, "base64");
+    const files = await readZip(decoded);
+
+    const testResultFiles = files.filter((file) => {
+      return file.filePath.includes("test-results");
+    });
+    const projectFiles = files.filter((file) => {
+      return file.filePath.includes("projects");
+    });
+
+    if (testResultFiles.length === 0 && projectFiles.length === 0) {
+      throw Error("Invalid project data file.");
+    }
+
+    if (option.includeTestResults && testResultFiles.length === 0) {
+      throw new Error("Test result information does not exist.");
+    }
+
+    if (option.includeProject && projectFiles.length === 0) {
+      throw new Error("Project information does not exist.");
+    }
+
+    return {
+      testResultFiles,
+      projectFiles,
+    };
   }
 }

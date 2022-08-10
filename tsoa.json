@@ -13,5 +13,6 @@
   "routes": {
     "routesDir": "src/routes",
     "basePath": "/api/v1"
-  }
+  },
+  "ignore": ["**/node_modules/**"]
 }

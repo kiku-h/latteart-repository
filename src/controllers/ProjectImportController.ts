@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import { Body, Controller, Get, Post, Route } from "tsoa";
+import { Body, Controller, Post, Route } from "tsoa";
 import {
   attachedFileDirectoryService,
-  importDirectoryService,
   screenshotDirectoryService,
   tempDirectoryService,
   transactionRunner,
 } from "..";
-import path from "path";
 import { ProjectImportService } from "@/services/ProjectImportService";
 import { CreateProjectImportDto } from "../interfaces/ProjectImport";
 import LoggingService from "@/logger/LoggingService";
@@ -34,51 +32,15 @@ import { TestStepServiceImpl } from "@/services/TestStepService";
 import { ConfigsService } from "@/services/ConfigsService";
 import { NotesServiceImpl } from "@/services/NotesService";
 import { TestPurposeServiceImpl } from "@/services/TestPurposeService";
-import { isProjectExportFile } from "@/lib/archiveFileTypeChecker";
-import { downloadZip } from "@/lib/Request";
-import { TempFileService } from "@/services/TempFileService";
 
 @Route("imports/projects")
 export class ProjectImportController extends Controller {
-  @Get()
-  public async list(): Promise<{ url: string; name: string }[]> {
-    const zipFilePaths = await importDirectoryService.collectFilePaths(
-      /^.+\.zip$/
-    );
-
-    return (
-      await Promise.all(
-        zipFilePaths.map(async (zipFilePath) => {
-          const zipFileName = path.basename(zipFilePath);
-          return (await isProjectExportFile(zipFilePath))
-            ? [
-                {
-                  url: importDirectoryService.getFileUrl(zipFileName),
-                  name: zipFileName,
-                },
-              ]
-            : [];
-        })
-      )
-    ).flat();
-  }
-
   @Post()
   public async create(
     @Body() requestBody: CreateProjectImportDto
   ): Promise<{ projectId: string }> {
     try {
       const timestampService = new TimestampServiceImpl();
-
-      const extname = path.extname(
-        requestBody.source.projectFileUrl.split("/").pop() ?? ""
-      );
-
-      const timestamp = timestampService.format("YYYYMMDD_HHmmss");
-      const tempFileName = `temp_${timestamp}${extname}`;
-
-      const data = await downloadZip(requestBody.source.projectFileUrl);
-      await tempDirectoryService.outputFile(tempFileName, data);
 
       const screenshotRepositoryService = new ImageFileRepositoryServiceImpl({
         staticDirectory: screenshotDirectoryService,
@@ -110,7 +72,7 @@ export class ProjectImportController extends Controller {
       const testPurposeService = new TestPurposeServiceImpl();
 
       const response = await new ProjectImportService().import(
-        tempFileName,
+        requestBody.source.projectFile,
         requestBody.includeProject,
         requestBody.includeTestResults,
         {
@@ -125,11 +87,6 @@ export class ProjectImportController extends Controller {
           testPurposeService,
           transactionRunner,
         }
-      );
-
-      await new TempFileService().deleteFile(
-        tempFileName,
-        tempDirectoryService
       );
 
       return response;

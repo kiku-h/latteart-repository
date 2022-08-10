@@ -34,7 +34,7 @@ import { TestDataSet } from "./testDataRepository/TestDataSet";
 import { TestScriptSourceOperation } from "./TestScriptSourceOperation";
 
 export interface TestScriptGenerationOption {
-  testScript: { isSimple: boolean };
+  optimized: boolean;
   testData: {
     useDataDriven: boolean;
     maxGeneration: number;
@@ -53,9 +53,9 @@ export class TestScriptGeneratorImpl implements TestScriptGenerator {
   public generate(
     sources: { initialUrl: string; history: TestScriptSourceOperation[] }[]
   ): TestScript {
-    const modelGeneratorType = this.option.testScript.isSimple
-      ? TestScriptModelGeneratorType.Simple
-      : TestScriptModelGeneratorType.Optimize;
+    const modelGeneratorType = this.option.optimized
+      ? TestScriptModelGeneratorType.Optimized
+      : TestScriptModelGeneratorType.Simple;
 
     const modelGenerator = new TestScriptModelGeneratorFactory().create(
       modelGeneratorType
@@ -79,7 +79,7 @@ export class TestScriptGeneratorImpl implements TestScriptGenerator {
     );
 
     const codeGenerator = new TestScriptCodeGeneratorFactory(
-      this.option.testScript.isSimple,
+      modelGeneratorType,
       this.option.testData,
       testCaseIdToDataSet,
       pageObjectIdToDataSets,

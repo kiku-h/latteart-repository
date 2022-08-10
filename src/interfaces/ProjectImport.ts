@@ -15,7 +15,7 @@
  */
 
 export interface CreateProjectImportDto {
-  source: { projectFileUrl: string };
+  source: { projectFile: { data: string; name: string } };
   includeTestResults: boolean;
   includeProject: boolean;
 }

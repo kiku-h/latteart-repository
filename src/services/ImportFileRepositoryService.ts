@@ -20,36 +20,16 @@ import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { StaticDirectoryService } from "./StaticDirectoryService";
 import { readZip } from "@/lib/zipReader";
 
-interface importProjectData {
-  projectId: string;
-  projectFile: { fileName: string; data: string };
-  stories: {
-    storyId: string;
-    sessions: {
-      sessionId: string;
-      attachedFiles: {
-        fileName: string;
-        data: string;
-      }[];
-    }[];
-  }[];
-  testResults: {
-    testResultId: string;
-    testResultFile: { fileName: string; data: string };
-    screenshots: { filePath: string; data: string }[];
-  }[];
-}
 export interface ImportFileRepositoryService {
-  importTestResult(
-    importFileName: string
-  ): Promise<{
+  readImportFile(base64FileData: string): Promise<{
     testResultFile: { fileName: string; data: string };
     screenshots: { filePath: string; data: string }[];
   }>;
 }
 
 export class ImportFileRepositoryServiceImpl
-  implements ImportFileRepositoryService {
+  implements ImportFileRepositoryService
+{
   constructor(
     private service: {
       staticDirectory: StaticDirectoryService;
@@ -58,17 +38,12 @@ export class ImportFileRepositoryServiceImpl
     }
   ) {}
 
-  public async importTestResult(
-    importFileName: string
-  ): Promise<{
+  public async readImportFile(base64FileData: string): Promise<{
     testResultFile: { fileName: string; data: string };
     screenshots: { filePath: string; data: string }[];
   }> {
-    const importFilePath = this.service.staticDirectory.getJoinedPath(
-      path.basename(importFileName)
-    );
-
-    const files = await readZip(importFilePath);
+    const decoded = Buffer.from(base64FileData, "base64");
+    const files = await readZip(decoded);
 
     const testResultFile = files.find((file) => file.filePath === "log.json");
 

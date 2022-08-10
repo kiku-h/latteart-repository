@@ -66,7 +66,6 @@ export class ProjectTestScriptsController extends Controller {
       return await new TestScriptsService({
         testResult: testResultService,
         testScriptFileRepository: testScriptFileRepositoryService,
-        config: new ConfigsService(),
       }).createTestScriptByProject(projectId, requestBody);
     } catch (error) {
       if (error instanceof ServerError) {

@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-export interface TestResultUploadRequestDto {
-  source: {
-    testResultId: string;
-  };
-  dest: {
-    repositoryUrl: string;
-    testResultId?: string;
-  };
+import { Session } from "./Sessions";
+
+export type PatchStoryResponse = Story;
+
+export interface PatchStoryDto {
+  status?: string;
+}
+
+export interface Story {
+  id: string;
+  testMatrixId: string;
+  testTargetId: string;
+  viewPointId: string;
+  status: string;
+  index: number;
+  sessions: Session[];
 }

@@ -25,6 +25,7 @@ import { PageObject } from "../model/pageObject/PageObject";
 import { JSPageObjectNameGenerator } from "./js/pageObject/JSPageObjectNameGenerator";
 import { JSPageObjectMethodNameGenerator } from "./js/pageObject/JSPageObjectMethodNameGenerator";
 import { JSSimplePageObjectCodeGenerator } from "./js/pageObject/JSSimplePageObjectCodeGenerator";
+import { TestScriptModelGeneratorType } from "../model/TestScriptModelGeneratorFactory";
 
 export enum TestScriptCodeLanguage {
   JavaScript,
@@ -32,7 +33,7 @@ export enum TestScriptCodeLanguage {
 
 export class TestScriptCodeGeneratorFactory {
   constructor(
-    private isSimple: boolean,
+    private modelGeneratorType: TestScriptModelGeneratorType,
     private testDataOption: {
       useDataDriven: boolean;
     },
@@ -55,12 +56,12 @@ export class TestScriptCodeGeneratorFactory {
           ),
         };
 
-        if (this.isSimple) {
+        if (this.modelGeneratorType === TestScriptModelGeneratorType.Simple) {
           return new JSTestScriptCodeGenerator(
             {
               pageObject: new JSSimplePageObjectCodeGenerator(jsNameGenerator),
               testSuite: new JSTestSuiteCodeGenerator(
-                this.isSimple,
+                this.modelGeneratorType,
                 jsNameGenerator,
                 this.testCaseIdToDataSet
               ),
@@ -80,7 +81,7 @@ export class TestScriptCodeGeneratorFactory {
                     this.testCaseIdToDataSet
                   )
                 : new JSTestSuiteCodeGenerator(
-                    this.isSimple,
+                    this.modelGeneratorType,
                     jsNameGenerator,
                     this.testCaseIdToDataSet
                   ),

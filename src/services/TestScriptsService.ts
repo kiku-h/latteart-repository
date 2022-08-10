@@ -15,20 +15,19 @@
  */
 
 import { ProjectEntity } from "@/entities/ProjectEntity";
+import { TestScriptOption } from "@/interfaces/TestScripts";
 import {
   createWDIOLocatorFormatter,
   ElementLocatorGeneratorImpl,
 } from "@/lib/elementLocator";
-import ScreenDefFactory from "@/lib/ScreenDefFactory";
+import ScreenDefFactory, {
+  ScreenDefinitionConfig,
+} from "@/lib/ScreenDefFactory";
 import { invalidOperationTypeExists } from "@/lib/scriptGenerator/model/pageObject/method/operation/PageObjectOperation";
 import { TestScript } from "@/lib/scriptGenerator/TestScript";
-import {
-  TestScriptGenerationOption,
-  TestScriptGeneratorImpl,
-} from "@/lib/scriptGenerator/TestScriptGenerator";
+import { TestScriptGeneratorImpl } from "@/lib/scriptGenerator/TestScriptGenerator";
 import { ServerError, ServerErrorCode } from "@/ServerError";
 import { getRepository } from "typeorm";
-import { ConfigsService } from "./ConfigsService";
 import { TestResultService } from "./TestResultService";
 import { TestScriptFileRepositoryService } from "./TestScriptFileRepositoryService";
 
@@ -37,13 +36,12 @@ export class TestScriptsService {
     private service: {
       testResult: TestResultService;
       testScriptFileRepository: TestScriptFileRepositoryService;
-      config: ConfigsService;
     }
   ) {}
 
   public async createTestScriptByProject(
     projectId: string,
-    option: TestScriptGenerationOption
+    option: TestScriptOption
   ): Promise<{ url: string; invalidOperationTypeExists: boolean }> {
     const testResultIds = (
       await getRepository(ProjectEntity).findOneOrFail(projectId, {
@@ -94,7 +92,7 @@ export class TestScriptsService {
 
   public async createTestScriptByTestResult(
     testResultId: string,
-    option: TestScriptGenerationOption
+    option: TestScriptOption
   ): Promise<{ url: string; invalidOperationTypeExists: boolean }> {
     const { testScript, invalidOperationTypeExists } =
       await this.generateTestScript({ testResultIds: [testResultId], option });
@@ -121,7 +119,7 @@ export class TestScriptsService {
 
   private async generateTestScript(params: {
     testResultIds: string[];
-    option: TestScriptGenerationOption;
+    option: TestScriptOption;
   }): Promise<{
     testScript: TestScript;
     invalidOperationTypeExists: boolean;
@@ -137,8 +135,23 @@ export class TestScriptsService {
       )
     ).flat();
 
-    const screenDefinitionConfig = (await this.service.config.getConfig("1"))
-      .config.screenDefinition;
+    const screenDefinitionConfig: ScreenDefinitionConfig = {
+      screenDefType: params.option.view.node.unit,
+      conditionGroups: params.option.view.node.definitions.map((definition) => {
+        return {
+          isEnabled: true,
+          screenName: definition.name,
+          conditions: definition.conditions.map((condition) => {
+            return {
+              isEnabled: true,
+              definitionType: condition.target,
+              matchType: condition.method,
+              word: condition.value,
+            };
+          }),
+        };
+      }),
+    };
 
     const locatorGenerator = new ElementLocatorGeneratorImpl(
       createWDIOLocatorFormatter()
@@ -177,7 +190,16 @@ export class TestScriptsService {
       };
     });
 
-    const testScriptGenerator = new TestScriptGeneratorImpl(params.option);
+    const testScriptGenerationOption = {
+      optimized: params.option.optimized,
+      testData: {
+        useDataDriven: params.option.testData.useDataDriven,
+        maxGeneration: params.option.testData.maxGeneration,
+      },
+    };
+    const testScriptGenerator = new TestScriptGeneratorImpl(
+      testScriptGenerationOption
+    );
 
     const testScript = testScriptGenerator.generate(sources);
 

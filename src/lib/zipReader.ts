@@ -18,9 +18,9 @@ import AdmZip from "adm-zip";
 import path from "path";
 
 export async function readZip(
-  archiveFilePath: string
+  filePathOrRawData: string | Buffer
 ): Promise<{ filePath: string; data: Buffer | string }[]> {
-  const zip = new AdmZip(archiveFilePath);
+  const zip = new AdmZip(filePathOrRawData);
 
   const entries = zip.getEntries();
 

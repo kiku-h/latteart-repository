@@ -10,5 +10,3 @@ snapshot-viewer
 coverage
 licenses*.csv
 *.sqlite
-imports/*
-!put_zip_files_here

@@ -13,7 +13,7 @@
     "package:mac": "nexe dist/index.js -o dist/latteart-repository/latteart-repository --target macos-x64-14.15.3",
     "prepackage:win": "yarn prepackage:settings && yarn prepackage:dependencies:win && yarn build",
     "prepackage:mac": "yarn prepackage:settings && yarn prepackage:dependencies:mac && yarn build",
-    "prepackage:settings": "cpx \"latteart*.config.json\" dist/latteart-repository && cpx ormconfig.json dist/latteart-repository && cpx imports/put_zip_files_here dist/latteart-repository/public/imports",
+    "prepackage:settings": "cpx \"latteart*.config.json\" dist/latteart-repository && cpx ormconfig.json dist/latteart-repository",
     "prepackage:dependencies:win": "cpx externals/package.json dist/latteart-repository && cd dist/latteart-repository && yarn install --ignore-engines && ./node_modules/.bin/node-pre-gyp install --directory=./node_modules/sqlite3 --target_platform=win32 --target_libc=unknown --target_arch=x64 && rimraf package.json && rimraf yarn.lock",
     "prepackage:dependencies:mac": "cpx externals/package.json dist/latteart-repository && cd dist/latteart-repository && yarn install --ignore-engines && ./node_modules/.bin/node-pre-gyp install --directory=./node_modules/sqlite3 --target_platform=darwin --target_libc=unknown --target_arch=x64 && rimraf package.json && rimraf yarn.lock",
     "lint": "eslint src",

@@ -34,14 +34,14 @@ import { PageObjectMethod } from "./pageObject/method/PageObjectMethod";
 
 export enum TestScriptModelGeneratorType {
   Simple,
-  Optimize,
+  Optimized,
 }
 
 export class TestScriptModelGeneratorFactory {
   public create(type: TestScriptModelGeneratorType): TestScriptModelGenerator {
     const sequencePathBuilder = new SequencePathBuilder();
 
-    return type === TestScriptModelGeneratorType.Optimize
+    return type === TestScriptModelGeneratorType.Optimized
       ? this.createOptimizeGenerator(sequencePathBuilder)
       : this.createSimpleGenerator(sequencePathBuilder);
   }

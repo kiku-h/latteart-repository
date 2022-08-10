@@ -58,28 +58,40 @@ describe("ProjectImportService", () => {
 
     it("includeProject: true, includeTestResults: true", async () => {
       const service = new ProjectImportService();
-      service["getFileData"] = jest.fn().mockResolvedValue([
-        { filePath: "test-results/testResultId/log.json", data: "{}" },
-        { filePath: "projects/projectId/project.json", data: "{}" },
-      ]);
+      service["readImportFile"] = jest.fn().mockResolvedValue({
+        testResultFiles: [
+          { filePath: "test-results/testResultId/log.json", data: "{}" },
+        ],
+        projectFiles: [
+          { filePath: "projects/projectId/project.json", data: "{}" },
+        ],
+      });
       service["extractTestResultsData"] = jest.fn().mockReturnValue([]);
       service["importTestResults"] = jest.fn().mockResolvedValue(new Map());
       service["extractProjectData"] = jest.fn().mockReturnValue({});
       service["importProject"] = jest.fn().mockResolvedValue("1");
 
-      await service.import("importFileName", true, true, {
-        timestampService,
-        testResultService,
-        testStepService,
-        screenshotRepositoryService,
-        attachedFileRepositoryService,
-        importDirectoryRepositoryService,
-        importDirectoryService,
-        notesService,
-        testPurposeService,
-        transactionRunner: new TransactionRunner(),
-      });
+      const importFile = { data: "data", name: "importFileName" };
+      const option = { includeProject: true, includeTestResults: true };
+      await service.import(
+        importFile,
+        option.includeProject,
+        option.includeTestResults,
+        {
+          timestampService,
+          testResultService,
+          testStepService,
+          screenshotRepositoryService,
+          attachedFileRepositoryService,
+          importDirectoryRepositoryService,
+          importDirectoryService,
+          notesService,
+          testPurposeService,
+          transactionRunner: new TransactionRunner(),
+        }
+      );
 
+      expect(service["readImportFile"]).toBeCalledWith(importFile.data, option);
       expect(service["extractTestResultsData"]).toBeCalledTimes(1);
       expect(service["importTestResults"]).toBeCalledTimes(1);
       expect(service["extractProjectData"]).toBeCalledTimes(1);
@@ -88,28 +100,40 @@ describe("ProjectImportService", () => {
 
     it("includeProject: false, includeTestResults: false", async () => {
       const service = new ProjectImportService();
-      service["getFileData"] = jest.fn().mockResolvedValue([
-        { filePath: "test-results/testResultId/log.json", data: "{}" },
-        { filePath: "projects/projectId/project.json", data: "{}" },
-      ]);
+      service["readImportFile"] = jest.fn().mockResolvedValue({
+        testResultFiles: [
+          { filePath: "test-results/testResultId/log.json", data: "{}" },
+        ],
+        projectFiles: [
+          { filePath: "projects/projectId/project.json", data: "{}" },
+        ],
+      });
       service["extractTestResultsData"] = jest.fn().mockReturnValue([]);
       service["importTestResults"] = jest.fn().mockResolvedValue(new Map());
       service["extractProjectData"] = jest.fn().mockReturnValue({});
       service["importProject"] = jest.fn().mockResolvedValue("1");
 
-      await service.import("importFileName", false, false, {
-        timestampService,
-        testResultService,
-        testStepService,
-        screenshotRepositoryService,
-        attachedFileRepositoryService,
-        importDirectoryRepositoryService,
-        importDirectoryService,
-        notesService,
-        testPurposeService,
-        transactionRunner: new TransactionRunner(),
-      });
+      const importFile = { data: "data", name: "importFileName" };
+      const option = { includeProject: false, includeTestResults: false };
+      await service.import(
+        importFile,
+        option.includeProject,
+        option.includeTestResults,
+        {
+          timestampService,
+          testResultService,
+          testStepService,
+          screenshotRepositoryService,
+          attachedFileRepositoryService,
+          importDirectoryRepositoryService,
+          importDirectoryService,
+          notesService,
+          testPurposeService,
+          transactionRunner: new TransactionRunner(),
+        }
+      );
 
+      expect(service["readImportFile"]).toBeCalledWith(importFile.data, option);
       expect(service["extractTestResultsData"]).toBeCalledTimes(0);
       expect(service["importTestResults"]).toBeCalledTimes(0);
       expect(service["extractProjectData"]).toBeCalledTimes(0);

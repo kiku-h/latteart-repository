@@ -16,7 +16,7 @@
 
 export interface CreateTestResultImportDto {
   source: {
-    testResultFileUrl: string;
+    testResultFile: { data: string; name: string };
   };
   dest?: {
     testResultId?: string;

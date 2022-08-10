@@ -24,10 +24,11 @@ import { CodeFormatter } from "../../CodeFormatter";
 import { TestSuiteCodeGenerator } from "../../TestSuiteCodeGenerator";
 import { TestDataSet } from "../../../testDataRepository/TestDataSet";
 import { NameGenerator } from "../../NameGenerator";
+import { TestScriptModelGeneratorType } from "@/lib/scriptGenerator/model/TestScriptModelGeneratorFactory";
 
 export class JSTestSuiteCodeGenerator implements TestSuiteCodeGenerator {
   constructor(
-    private isSimple: boolean,
+    private modelGeneratorType: TestScriptModelGeneratorType,
     private nameGenerator: {
       pageObject: NameGenerator;
       method: NameGenerator;
@@ -177,7 +178,8 @@ ${methodComment}.${methodName}(${argsString})`;
   }
 
   private generateArgsString(argumentGroupString: string) {
-    if (this.isSimple) return "";
+    if (this.modelGeneratorType === TestScriptModelGeneratorType.Simple)
+      return "";
     return argumentGroupString
       ? `\
 {

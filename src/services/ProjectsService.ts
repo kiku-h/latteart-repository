@@ -36,6 +36,7 @@ import LoggingService from "@/logger/LoggingService";
 import { TimestampService } from "./TimestampService";
 import { TransactionRunner } from "@/TransactionRunner";
 import { TestProgressService } from "./TestProgressService";
+import { storyEntityToResponse } from "@/lib/entityToResponse";
 
 export interface ProjectsService {
   getProjectIdentifiers(): Promise<ProjectListResponse[]>;
@@ -883,91 +884,7 @@ export class ProjectsServiceImpl implements ProjectsService {
     const stories: Project["stories"] = [];
     for (const testMatrix of project.testMatrices) {
       for (const story of testMatrix.stories) {
-        stories.push({
-          id: story.id,
-          testMatrixId: story.testMatrixId,
-          testTargetId: story.testTargetId,
-          viewPointId: story.viewPointId,
-          status: story.status,
-          sessions: story.sessions
-            .map((session) => {
-              const sortedNotes =
-                session.testResult?.notes?.slice().sort((a, b) => {
-                  const stepA = a.testSteps ? a.testSteps[0] : undefined;
-                  const stepB = b.testSteps ? b.testSteps[0] : undefined;
-                  return (stepA?.timestamp ?? 0) - (stepB?.timestamp ?? 0);
-                }) ?? [];
-
-              const issues = sortedNotes.map((note) => {
-                const testStep = note.testSteps ? note.testSteps[0] : undefined;
-
-                return {
-                  details: note.details,
-                  source: { index: 0, type: "notice" },
-                  status: note.tags?.find((tag) => {
-                    return tag.name === "reported";
-                  })
-                    ? "reported"
-                    : note.tags?.find((tag) => {
-                        return tag.name === "invalid";
-                      })
-                    ? "invalid"
-                    : "",
-                  ticketId: "",
-                  type: "notice",
-                  value: note.value,
-                  imageFilePath:
-                    note.screenshot?.fileUrl ??
-                    testStep?.screenshot?.fileUrl ??
-                    "",
-                };
-              });
-
-              return {
-                index: session.index,
-                id: session.id,
-                attachedFiles:
-                  session.attachedFiles
-                    ?.sort((a, b) => {
-                      return (a.createdDate as Date).toLocaleString() >
-                        (b.createdDate as Date).toLocaleString()
-                        ? 1
-                        : -1;
-                    })
-                    .map((attachedFile) => {
-                      return {
-                        name: attachedFile.name,
-                        fileUrl: attachedFile.fileUrl,
-                      };
-                    }) ?? [],
-                doneDate: session.doneDate,
-                isDone: !!session.doneDate,
-                issues,
-                memo: session.memo,
-                name: session.name,
-                testItem: session.testItem,
-                testResultFiles: session.testResult
-                  ? [
-                      {
-                        name: session.testResult?.name ?? "",
-                        id: session.testResult?.id ?? "",
-                      },
-                    ]
-                  : undefined,
-                testerName: session.testUser,
-                testingTime: session.testingTime,
-              };
-            })
-            .sort(function (first, second) {
-              if (first.index > second.index) {
-                return 1;
-              } else if (first.index < second.index) {
-                return -1;
-              } else {
-                return 0;
-              }
-            }),
-        });
+        stories.push(storyEntityToResponse(story));
       }
     }
 

@@ -24,7 +24,7 @@ import { deserializeTestResult } from "@/lib/deserializeTestResult";
 import { getRepository } from "typeorm";
 import { TestResultEntity } from "@/entities/TestResultEntity";
 
-export class ImportService {
+export class TestResultImportService {
   constructor(
     private service: {
       testResult: TestResultService;
@@ -36,13 +36,13 @@ export class ImportService {
   ) {}
 
   public async importTestResult(
-    importFileName: string,
+    importFile: { data: string; name: string },
     testResultId: string | null
   ): Promise<{ testResultId: string }> {
-    console.log(importFileName);
+    console.log(importFile.name);
 
-    const importedData = await this.service.importFileRepository.importTestResult(
-      importFileName
+    const importedData = await this.service.importFileRepository.readImportFile(
+      importFile.data
     );
 
     const testResult = deserializeTestResult(importedData.testResultFile.data);
@@ -84,10 +84,11 @@ export class ImportService {
         );
 
         if (testStep.testPurpose) {
-          const newTestPurpose = await this.service.testPurpose.createTestPurpose(
-            newTestResult.id,
-            testStep.testPurpose
-          );
+          const newTestPurpose =
+            await this.service.testPurpose.createTestPurpose(
+              newTestResult.id,
+              testStep.testPurpose
+            );
 
           await this.service.testStep.attachTestPurposeToTestStep(
             newTestStep.id,

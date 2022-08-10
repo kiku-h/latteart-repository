@@ -4,6 +4,7 @@ import {
 } from "@/lib/scriptGenerator/model/testSuite/TestSuite";
 import { JSTestSuiteCodeGenerator } from "@/lib/scriptGenerator/codeGenerator/js/testSuite/JSTestSuiteCodeGenerator";
 import { TestDataSet } from "@/lib/scriptGenerator/testDataRepository/TestDataSet";
+import { TestScriptModelGeneratorType } from "@/lib/scriptGenerator/model/TestScriptModelGeneratorFactory";
 
 describe("JSTestSuiteCodeGenerator", () => {
   describe("#generateFrom", () => {
@@ -141,7 +142,7 @@ describe("JSTestSuiteCodeGenerator", () => {
       };
 
       const testSuiteCode = new JSTestSuiteCodeGenerator(
-        false,
+        TestScriptModelGeneratorType.Optimized,
         nameGenerator,
         testCaseIdToDataSet
       ).generateFrom(...testSuites);

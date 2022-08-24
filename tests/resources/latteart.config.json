@@ -134,9 +134,7 @@
     },
     {
       "name": "preset1",
-      "viewPoints": [
-        { "name": "プリセット１" }
-      ]
+      "viewPoints": [{ "name": "プリセット１" }]
     }
   ],
   "config": {
@@ -154,6 +152,12 @@
       "command": "cwebp {filePath} -o {dirPath}/{baseName}.webp",
       "isDeleteSrcImage": true,
       "isEnabled": true
+    },
+    "compare": {
+      "exclude": {
+        "isEnabled": false,
+        "tags": ""
+      }
     }
   }
 }

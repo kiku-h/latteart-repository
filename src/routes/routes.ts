@@ -2868,6 +2868,7 @@ export function RegisterRoutes(app: express.Router) {
           required: true,
           dataType: "nestedObjectLiteral",
           nestedProperties: {
+            excludeTags: { dataType: "string" },
             excludeQuery: { dataType: "string" },
             targetTestResultId: { dataType: "string", required: true },
           },

@@ -208,5 +208,20 @@ export class SettingsProvider {
     if (source.captureSettings && source.captureSettings.ignoreTags) {
       target.captureSettings.ignoreTags = source.captureSettings.ignoreTags;
     }
+
+    if (source.config && source.config.compare) {
+      const sourceCompare = source.config.compare;
+
+      if (sourceCompare.exclude && sourceCompare.exclude.isEnabled) {
+        Object.assign(
+          target.config.compare.exclude.isEnabled,
+          source.config.compare.exclude.isEnabled
+        );
+      }
+
+      if (sourceCompare.exclude && sourceCompare.exclude.tags) {
+        target.config.compare.exclude.tags = sourceCompare.exclude.tags;
+      }
+    }
   }
 }

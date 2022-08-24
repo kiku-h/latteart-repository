@@ -16,9 +16,22 @@
 
 import { Operation } from "@/interfaces/TestSteps";
 
-function diffCheckByText<T>(a: T, b: T) {
+function diffCheckByText<T>(a: T, b: T, excludeTagsNames: string[]) {
   const textA = typeof a === "string" ? a : JSON.stringify(a);
   const textB = typeof b === "string" ? b : JSON.stringify(b);
+
+  const isIgnore = excludeTagsNames
+    .map((tag) => {
+      return (
+        textA.indexOf(tag.toUpperCase()) !== -1 ||
+        textB.indexOf(tag.toUpperCase()) !== -1
+      );
+    })
+    .some((value) => value === true);
+
+  if (isIgnore) {
+    return undefined;
+  }
 
   return textA === textB ? undefined : { a: textA, b: textB };
 }
@@ -54,7 +67,8 @@ export class OperationDiffChecker {
 
   public async diff(
     a: Operation | undefined,
-    b: Operation | undefined
+    b: Operation | undefined,
+    excludeTagsNames: string[]
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }> {
@@ -66,7 +80,7 @@ export class OperationDiffChecker {
 
           const diff = option.func
             ? option.func(valueA, valueB)
-            : diffCheckByText(valueA, valueB);
+            : diffCheckByText(valueA, valueB, excludeTagsNames);
 
           return diff ? [[option.name ?? paramName, diff]] : [];
         }

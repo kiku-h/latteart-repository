@@ -19,10 +19,16 @@ describe("OperationDiffChecker", () => {
       keywordTexts: [],
     };
 
+    const excludeTagsNames: string[] = [];
+
     describe("2つの操作の差分を抽出する", () => {
       it("差分なしの場合は空オブジェクトを返す", async () => {
         expect(
-          await new OperationDiffChecker().diff(baseOperation, baseOperation)
+          await new OperationDiffChecker().diff(
+            baseOperation,
+            baseOperation,
+            excludeTagsNames
+          )
         ).toEqual({});
       });
 
@@ -37,7 +43,11 @@ describe("OperationDiffChecker", () => {
         };
 
         expect(
-          await new OperationDiffChecker().diff(baseOperation, operation)
+          await new OperationDiffChecker().diff(
+            baseOperation,
+            operation,
+            excludeTagsNames
+          )
         ).toEqual({
           input: {
             a: "",
@@ -79,7 +89,11 @@ describe("OperationDiffChecker", () => {
         };
 
         expect(
-          await new OperationDiffChecker().diff(baseOperation, operation)
+          await new OperationDiffChecker().diff(
+            baseOperation,
+            operation,
+            excludeTagsNames
+          )
         ).toEqual({
           elementInfo: {
             a: "null",
@@ -110,7 +124,11 @@ describe("OperationDiffChecker", () => {
         };
 
         expect(
-          await new OperationDiffChecker().diff(baseOperation, operation)
+          await new OperationDiffChecker().diff(
+            baseOperation,
+            operation,
+            excludeTagsNames
+          )
         ).toEqual({});
       });
 
@@ -141,7 +159,8 @@ describe("OperationDiffChecker", () => {
         expect(
           await new OperationDiffChecker(paramNameToDiffCheckFunction).diff(
             baseOperation,
-            operation
+            operation,
+            excludeTagsNames
           )
         ).toEqual({ image: expectedDiff });
       });
@@ -149,7 +168,11 @@ describe("OperationDiffChecker", () => {
 
     it("渡された操作自体がundefinedの場合は、全項目がundefinedであるものとして比較する", async () => {
       expect(
-        await new OperationDiffChecker().diff(baseOperation, undefined)
+        await new OperationDiffChecker().diff(
+          baseOperation,
+          undefined,
+          excludeTagsNames
+        )
       ).toEqual({
         input: {
           a: "",
@@ -182,7 +205,50 @@ describe("OperationDiffChecker", () => {
       });
 
       expect(
-        await new OperationDiffChecker().diff(undefined, undefined)
+        await new OperationDiffChecker().diff(
+          undefined,
+          undefined,
+          excludeTagsNames
+        )
+      ).toEqual({});
+    });
+
+    it("無視するタグを指定している場合は、差分があっても無視する", async () => {
+      const excludeTags: string[] = ["textarea"];
+      const elementInfoA = {
+        tagname: "textarea",
+        text: "text",
+        xpath: "xpath",
+        value: "value",
+        checked: true,
+        attributes: { attributeKey: "attributeValue" },
+      };
+      const elementInfoB = {
+        tagname: "textarea",
+        text: "textA",
+        xpath: "xpath",
+        value: "value",
+        checked: true,
+        attributes: { attributeKey: "attributeValue" },
+      };
+      const keywordTexts = ["aaa", "bbb", "ddd"];
+      const operationA: Operation = {
+        ...baseOperation,
+        elementInfo: elementInfoA,
+        keywordTexts,
+      };
+      const operationB: Operation = {
+        ...baseOperation,
+        elementInfo: elementInfoB,
+        keywordTexts,
+      };
+
+      expect(
+        await new OperationDiffChecker().diff(
+          operationA,
+          operationB,
+          excludeTags
+        )
       ).toEqual({});
     });
   });

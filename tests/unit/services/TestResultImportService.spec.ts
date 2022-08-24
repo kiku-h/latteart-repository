@@ -127,6 +127,7 @@ describe("TestResultImportService", () => {
         coverageSources: [
           { title: "title", url: "url", screenElements: [element1] },
         ],
+        source: "",
       };
 
       const result = await service.saveImportFileData(

@@ -56,6 +56,8 @@ import { ViewPointsController } from "./../controllers/ViewPointsController";
 import { StoriesController } from "./../controllers/StoriesController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { CompressedImageController } from "./../controllers/CompressedImageController";
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ProjectTestScriptsController } from "./../controllers/ProjectTestScriptsController";
 import * as express from "express";
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -534,93 +536,6 @@ const models: TsoaRoute.Models = {
     type: { ref: "DailyTestProgress", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  TestResultViewOption: {
-    dataType: "refAlias",
-    type: {
-      dataType: "nestedObjectLiteral",
-      nestedProperties: {
-        node: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            definitions: {
-              dataType: "array",
-              array: {
-                dataType: "nestedObjectLiteral",
-                nestedProperties: {
-                  conditions: {
-                    dataType: "array",
-                    array: {
-                      dataType: "nestedObjectLiteral",
-                      nestedProperties: {
-                        value: { dataType: "string", required: true },
-                        method: {
-                          dataType: "union",
-                          subSchemas: [
-                            { dataType: "enum", enums: ["contains"] },
-                            { dataType: "enum", enums: ["equals"] },
-                            { dataType: "enum", enums: ["regex"] },
-                          ],
-                          required: true,
-                        },
-                        target: {
-                          dataType: "union",
-                          subSchemas: [
-                            { dataType: "enum", enums: ["title"] },
-                            { dataType: "enum", enums: ["url"] },
-                            { dataType: "enum", enums: ["keyword"] },
-                          ],
-                          required: true,
-                        },
-                      },
-                    },
-                    required: true,
-                  },
-                  name: { dataType: "string", required: true },
-                },
-              },
-              required: true,
-            },
-            unit: {
-              dataType: "union",
-              subSchemas: [
-                { dataType: "enum", enums: ["title"] },
-                { dataType: "enum", enums: ["url"] },
-              ],
-              required: true,
-            },
-          },
-          required: true,
-        },
-      },
-      validators: {},
-    },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  TestScriptOption: {
-    dataType: "refAlias",
-    type: {
-      dataType: "nestedObjectLiteral",
-      nestedProperties: {
-        view: { ref: "TestResultViewOption", required: true },
-        testData: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            maxGeneration: { dataType: "double", required: true },
-            useDataDriven: { dataType: "boolean", required: true },
-          },
-          required: true,
-        },
-        optimized: { dataType: "boolean", required: true },
-      },
-      validators: {},
-    },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  CreateTestScriptDto: {
-    dataType: "refAlias",
-    type: { ref: "TestScriptOption", validators: {} },
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   Session: {
     dataType: "refAlias",
     type: {
@@ -981,34 +896,6 @@ const models: TsoaRoute.Models = {
         },
         required: true,
       },
-      inputElementInfos: {
-        dataType: "array",
-        array: {
-          dataType: "nestedObjectLiteral",
-          nestedProperties: {
-            inputElements: {
-              dataType: "nestedObjectLiteral",
-              nestedProperties: {
-                attributes: {
-                  dataType: "nestedObjectLiteral",
-                  nestedProperties: {},
-                  additionalProperties: { dataType: "string" },
-                  required: true,
-                },
-                checked: { dataType: "boolean", required: true },
-                value: { dataType: "string", required: true },
-                xpath: { dataType: "string", required: true },
-                text: { dataType: "string", required: true },
-                tagname: { dataType: "string", required: true },
-              },
-              required: true,
-            },
-            url: { dataType: "string", required: true },
-            title: { dataType: "string", required: true },
-          },
-        },
-        required: true,
-      },
     },
     additionalProperties: false,
   },
@@ -1041,6 +928,93 @@ const models: TsoaRoute.Models = {
   PatchTestResultResponse: {
     dataType: "refAlias",
     type: { ref: "TestResult", validators: {} },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  TestResultViewOption: {
+    dataType: "refAlias",
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        node: {
+          dataType: "nestedObjectLiteral",
+          nestedProperties: {
+            definitions: {
+              dataType: "array",
+              array: {
+                dataType: "nestedObjectLiteral",
+                nestedProperties: {
+                  conditions: {
+                    dataType: "array",
+                    array: {
+                      dataType: "nestedObjectLiteral",
+                      nestedProperties: {
+                        value: { dataType: "string", required: true },
+                        method: {
+                          dataType: "union",
+                          subSchemas: [
+                            { dataType: "enum", enums: ["contains"] },
+                            { dataType: "enum", enums: ["equals"] },
+                            { dataType: "enum", enums: ["regex"] },
+                          ],
+                          required: true,
+                        },
+                        target: {
+                          dataType: "union",
+                          subSchemas: [
+                            { dataType: "enum", enums: ["title"] },
+                            { dataType: "enum", enums: ["url"] },
+                            { dataType: "enum", enums: ["keyword"] },
+                          ],
+                          required: true,
+                        },
+                      },
+                    },
+                    required: true,
+                  },
+                  name: { dataType: "string", required: true },
+                },
+              },
+              required: true,
+            },
+            unit: {
+              dataType: "union",
+              subSchemas: [
+                { dataType: "enum", enums: ["title"] },
+                { dataType: "enum", enums: ["url"] },
+              ],
+              required: true,
+            },
+          },
+          required: true,
+        },
+      },
+      validators: {},
+    },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  TestScriptOption: {
+    dataType: "refAlias",
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        view: { ref: "TestResultViewOption", required: true },
+        testData: {
+          dataType: "nestedObjectLiteral",
+          nestedProperties: {
+            maxGeneration: { dataType: "double", required: true },
+            useDataDriven: { dataType: "boolean", required: true },
+          },
+          required: true,
+        },
+        optimized: { dataType: "boolean", required: true },
+      },
+      validators: {},
+    },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  CreateTestScriptDto: {
+    dataType: "refAlias",
+    type: { ref: "TestScriptOption", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   ElementInfo: {
@@ -1109,26 +1083,11 @@ const models: TsoaRoute.Models = {
     additionalProperties: false,
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  InputElementInfo: {
-    dataType: "refObject",
-    properties: {
-      title: { dataType: "string", required: true },
-      url: { dataType: "string", required: true },
-      inputElements: {
-        dataType: "array",
-        array: { dataType: "refObject", ref: "ElementInfo" },
-        required: true,
-      },
-    },
-    additionalProperties: false,
-  },
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   CreateTestStepResponse: {
     dataType: "refAlias",
     type: {
       dataType: "nestedObjectLiteral",
       nestedProperties: {
-        inputElementInfo: { ref: "InputElementInfo" },
         coverageSource: { ref: "CoverageSource", required: true },
         operation: { ref: "Operation", required: true },
         id: { dataType: "string", required: true },
@@ -1537,42 +1496,6 @@ export function RegisterRoutes(app: express.Router) {
         const controller = new DeviceConfigsController();
 
         const promise = controller.update.apply(
-          controller,
-          validatedArgs as any
-        );
-        promiseHandler(controller, promise, response, undefined, next);
-      } catch (err) {
-        return next(err);
-      }
-    }
-  );
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  app.post(
-    "/api/v1/upload",
-
-    function FileUploadController_testResultUpload(
-      request: any,
-      response: any,
-      next: any
-    ) {
-      const args = {
-        request: {
-          in: "request",
-          name: "request",
-          required: true,
-          dataType: "object",
-        },
-      };
-
-      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-      let validatedArgs: any[] = [];
-      try {
-        validatedArgs = getValidatedArgs(args, request, response);
-
-        const controller = new FileUploadController();
-
-        const promise = controller.testResultUpload.apply(
           controller,
           validatedArgs as any
         );
@@ -2000,48 +1923,6 @@ export function RegisterRoutes(app: express.Router) {
         const controller = new ProjectsController();
 
         const promise = controller.getTestProgress.apply(
-          controller,
-          validatedArgs as any
-        );
-        promiseHandler(controller, promise, response, undefined, next);
-      } catch (err) {
-        return next(err);
-      }
-    }
-  );
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  app.post(
-    "/api/v1/projects/:projectId/test-scripts",
-
-    function ProjectTestScriptsController_create(
-      request: any,
-      response: any,
-      next: any
-    ) {
-      const args = {
-        projectId: {
-          in: "path",
-          name: "projectId",
-          required: true,
-          dataType: "string",
-        },
-        requestBody: {
-          in: "body",
-          name: "requestBody",
-          required: true,
-          ref: "CreateTestScriptDto",
-        },
-      };
-
-      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-      let validatedArgs: any[] = [];
-      try {
-        validatedArgs = getValidatedArgs(args, request, response);
-
-        const controller = new ProjectTestScriptsController();
-
-        const promise = controller.create.apply(
           controller,
           validatedArgs as any
         );
@@ -3411,6 +3292,48 @@ export function RegisterRoutes(app: express.Router) {
         validatedArgs = getValidatedArgs(args, request, response);
 
         const controller = new CompressedImageController();
+
+        const promise = controller.create.apply(
+          controller,
+          validatedArgs as any
+        );
+        promiseHandler(controller, promise, response, undefined, next);
+      } catch (err) {
+        return next(err);
+      }
+    }
+  );
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  app.post(
+    "/api/v1/projects/:projectId/test-scripts",
+
+    function ProjectTestScriptsController_create(
+      request: any,
+      response: any,
+      next: any
+    ) {
+      const args = {
+        projectId: {
+          in: "path",
+          name: "projectId",
+          required: true,
+          dataType: "string",
+        },
+        requestBody: {
+          in: "body",
+          name: "requestBody",
+          required: true,
+          ref: "CreateTestScriptDto",
+        },
+      };
+
+      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+      let validatedArgs: any[] = [];
+      try {
+        validatedArgs = getValidatedArgs(args, request, response);
+
+        const controller = new ProjectTestScriptsController();
 
         const promise = controller.create.apply(
           controller,

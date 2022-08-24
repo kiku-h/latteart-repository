@@ -16,17 +16,12 @@
 
 import LoggingService from "@/logger/LoggingService";
 import { ServerError, ServerErrorCode } from "@/ServerError";
-import { ConfigsService } from "@/services/ConfigsService";
 import { ImageFileRepositoryServiceImpl } from "@/services/ImageFileRepositoryService";
-import { TestResultServiceImpl } from "@/services/TestResultService";
-import { TestStepServiceImpl } from "@/services/TestStepService";
 import { TimestampServiceImpl } from "@/services/TimestampService";
 import { Controller, Post, Route, Body } from "tsoa";
 import { screenshotDirectoryService, tempDirectoryService } from "..";
 import { ImportFileRepositoryServiceImpl } from "@/services/ImportFileRepositoryService";
 import { TestResultImportService } from "@/services/TestResultImportService";
-import { TestPurposeServiceImpl } from "@/services/TestPurposeService";
-import { NotesServiceImpl } from "@/services/NotesService";
 import { CreateTestResultImportDto } from "../interfaces/TesResultImport";
 
 @Route("imports/test-results")
@@ -41,29 +36,6 @@ export class TestResultImportController extends Controller {
       staticDirectory: screenshotDirectoryService,
     });
 
-    const testResultService = new TestResultServiceImpl({
-      staticDirectory: tempDirectoryService,
-      timestamp: timestampService,
-      testStep: new TestStepServiceImpl({
-        imageFileRepository: imageFileRepositoryService,
-        timestamp: timestampService,
-        config: new ConfigsService(),
-      }),
-    });
-
-    const testStepService = new TestStepServiceImpl({
-      imageFileRepository: imageFileRepositoryService,
-      timestamp: timestampService,
-      config: new ConfigsService(),
-    });
-
-    const noteService = new NotesServiceImpl({
-      imageFileRepository: imageFileRepositoryService,
-      timestamp: timestampService,
-    });
-
-    const testPurposeService = new TestPurposeServiceImpl();
-
     const importFileRepositoryService = new ImportFileRepositoryServiceImpl({
       staticDirectory: tempDirectoryService,
       imageFileRepository: imageFileRepositoryService,
@@ -72,11 +44,9 @@ export class TestResultImportController extends Controller {
 
     try {
       const result = await new TestResultImportService({
-        testResult: testResultService,
-        testStep: testStepService,
-        testPurpose: testPurposeService,
-        note: noteService,
         importFileRepository: importFileRepositoryService,
+        imageFileRepository: imageFileRepositoryService,
+        timestamp: timestampService,
       }).importTestResult(
         requestBody.source.testResultFile,
         requestBody.dest?.testResultId ?? null

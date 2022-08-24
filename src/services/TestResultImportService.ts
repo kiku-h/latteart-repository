@@ -14,24 +14,30 @@
  * limitations under the License.
  */
 
-import { TestResultService } from "./TestResultService";
 import path from "path";
-import { TestStepService } from "./TestStepService";
-import { NotesServiceImpl } from "./NotesService";
-import { TestPurposeServiceImpl } from "./TestPurposeService";
 import { ImportFileRepositoryService } from "./ImportFileRepositoryService";
-import { deserializeTestResult } from "@/lib/deserializeTestResult";
+import {
+  deserializeTestResult,
+  TestResult,
+  TestStep,
+} from "@/lib/deserializeTestResult";
 import { getRepository } from "typeorm";
 import { TestResultEntity } from "@/entities/TestResultEntity";
+import { TestStepEntity } from "@/entities/TestStepEntity";
+import { ScreenshotEntity } from "@/entities/ScreenshotEntity";
+import { TestPurposeEntity } from "@/entities/TestPurposeEntity";
+import { NoteEntity } from "@/entities/NoteEntity";
+import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
+import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
+import { TagEntity } from "@/entities/TagEntity";
+import { TimestampService } from "./TimestampService";
 
 export class TestResultImportService {
   constructor(
     private service: {
-      testResult: TestResultService;
-      testStep: TestStepService;
-      testPurpose: TestPurposeServiceImpl;
-      note: NotesServiceImpl;
       importFileRepository: ImportFileRepositoryService;
+      imageFileRepository: ImageFileRepositoryService;
+      timestamp: TimestampService;
     }
   ) {}
 
@@ -41,90 +47,224 @@ export class TestResultImportService {
   ): Promise<{ testResultId: string }> {
     console.log(importFile.name);
 
-    const importedData = await this.service.importFileRepository.readImportFile(
-      importFile.data
-    );
+    const importFileData =
+      await this.service.importFileRepository.readImportFile(importFile.data);
 
-    const testResult = deserializeTestResult(importedData.testResultFile.data);
-
-    const newTestResult = await this.service.testResult.createTestResult(
-      testResult,
+    const { newTestResultId } = await this.saveImportFileData(
+      importFileData,
       testResultId
     );
 
-    await Promise.all(
-      testResult.testSteps.map(async (testStep) => {
-        const imageFileBaseName = path.basename(
-          testStep.operation.imageFileUrl
-        );
-        const newTestStep = await this.service.testStep.createTestStep(
-          newTestResult.id,
-          {
-            input: testStep.operation.input,
-            type: testStep.operation.type,
-            elementInfo: testStep.operation.elementInfo,
-            title: testStep.operation.title,
-            url: testStep.operation.url,
-            imageData:
-              importedData.screenshots.find(
-                (screenshot) => screenshot.filePath === imageFileBaseName
-              )?.data ?? "",
-            windowHandle: testStep.operation.windowHandle,
-            screenElements:
-              testResult.coverageSources.find(
-                (coverageSource) =>
-                  coverageSource.title === testStep.operation.title &&
-                  coverageSource.url === testStep.operation.url
-              )?.screenElements ?? [],
-            inputElements: testStep.operation.inputElements,
-            keywordTexts: testStep.operation.keywordTexts,
-            timestamp: parseInt(testStep.operation.timestamp, 10),
-            pageSource: "",
-          }
-        );
+    return {
+      testResultId: newTestResultId,
+    };
+  }
 
-        if (testStep.testPurpose) {
-          const newTestPurpose =
-            await this.service.testPurpose.createTestPurpose(
-              newTestResult.id,
-              testStep.testPurpose
-            );
+  public async saveImportFileDatas(
+    ...args: {
+      importFileData: {
+        testResultFile: {
+          fileName: string;
+          data: string;
+        };
+        screenshots: {
+          filePath: string;
+          data: string;
+        }[];
+      };
+      testResultId: string | null;
+    }[]
+  ): Promise<{ newTestResultId: string; oldTestResultId?: string }[]> {
+    return Promise.all(
+      args.map(({ importFileData, testResultId }) =>
+        this.saveImportFileData(importFileData, testResultId)
+      )
+    );
+  }
 
-          await this.service.testStep.attachTestPurposeToTestStep(
-            newTestStep.id,
-            newTestPurpose.id
-          );
-        }
-
-        const newNoteIds = await Promise.all(
-          testStep.notes.map(async (note) => {
-            const imageData =
-              importedData.screenshots.find(
-                (screenshot) => screenshot.filePath === note.imageFileUrl
-              )?.data ?? "";
-
-            return (
-              await this.service.note.createNote(newTestResult.id, {
-                ...note,
-                imageData,
-              })
-            ).id;
-          })
-        );
-
-        await this.service.testStep.attachNotesToTestStep(
-          newTestStep.id,
-          newNoteIds
-        );
-      })
+  public async saveImportFileData(
+    importFileData: {
+      testResultFile: {
+        fileName: string;
+        data: string;
+      };
+      screenshots: {
+        filePath: string;
+        data: string;
+      }[];
+    },
+    testResultId: string | null
+  ): Promise<{ newTestResultId: string; oldTestResultId?: string }> {
+    const testResult = deserializeTestResult(
+      importFileData.testResultFile.data
     );
 
-    if (testResultId) {
-      getRepository(TestResultEntity);
-    }
+    const screenshotFilePathToEntity = new Map(
+      await Promise.all(
+        importFileData.screenshots.map<Promise<[string, ScreenshotEntity]>>(
+          async (screenshot) => {
+            const screenshotEntity = await getRepository(ScreenshotEntity).save(
+              new ScreenshotEntity()
+            );
+            const substrings = screenshot.filePath.split(".");
+            const fileExt =
+              substrings.length >= 2 ? `.${substrings.pop()}` : "";
+            const imageFileUrl =
+              await this.service.imageFileRepository.writeBase64ToFile(
+                `${screenshotEntity.id}${fileExt}`,
+                screenshot.data
+              );
+            screenshotEntity.fileUrl = imageFileUrl;
+
+            return [screenshot.filePath, screenshotEntity];
+          }
+        )
+      )
+    );
+
+    const tagNameToEntity = new Map(
+      (await getRepository(TagEntity).find()).map<[string, TagEntity]>(
+        (tagEntity) => {
+          return [tagEntity.name, tagEntity];
+        }
+      )
+    );
+
+    const newTestResultEntity = await getRepository(TestResultEntity).save(
+      this.createTestResultEntity(
+        testResult,
+        screenshotFilePathToEntity,
+        tagNameToEntity
+      )
+    );
 
     return {
-      testResultId: newTestResult.id,
+      newTestResultId: newTestResultEntity.id,
+      oldTestResultId: testResultId ?? undefined,
     };
+  }
+
+  private createTestResultEntity(
+    testResult: TestResult,
+    screenshotFilePathToEntity: Map<string, ScreenshotEntity>,
+    tagNameToEntity: Map<string, TagEntity>
+  ) {
+    const testStepEntities = testResult.testSteps.map((testStep) => {
+      return this.createTestStepEntity(
+        testStep,
+        screenshotFilePathToEntity,
+        tagNameToEntity
+      );
+    });
+    const coverageSourceEntities: CoverageSourceEntity[] =
+      testResult.coverageSources.map((coverageSource) => {
+        return new CoverageSourceEntity({
+          title: coverageSource.title,
+          url: coverageSource.url,
+          screenElements: JSON.stringify(coverageSource.screenElements),
+        });
+      });
+
+    const noteEntities = testStepEntities.flatMap(({ notes }) => notes ?? []);
+
+    const testPurposeEntities = testStepEntities.flatMap(({ testPurpose }) =>
+      testPurpose ? [testPurpose] : []
+    );
+
+    return new TestResultEntity({
+      name:
+        testResult.name ??
+        `session_${this.service.timestamp.format("YYYYMMDD_HHmmss")}`,
+      startTimestamp:
+        testResult.startTimeStamp ?? testResult.initialUrl
+          ? this.service.timestamp.epochMilliseconds()
+          : 0,
+      endTimestamp: -1,
+      initialUrl: testResult.initialUrl ?? "",
+      screenshots: Array.from(screenshotFilePathToEntity.values()),
+      testSteps: testStepEntities,
+      coverageSources: coverageSourceEntities,
+      notes: noteEntities,
+      testPurposes: testPurposeEntities,
+    });
+  }
+
+  private createTestStepEntity(
+    testStep: TestStep,
+    screenshotFilePathToEntity: Map<string, ScreenshotEntity>,
+    tagNameToEntity: Map<string, TagEntity>
+  ) {
+    const screenshotEntity = screenshotFilePathToEntity.get(
+      path.basename(testStep.operation.imageFileUrl)
+    );
+
+    const testPurposeEntity = testStep.testPurpose
+      ? this.createTestPurposeEntity(testStep.testPurpose)
+      : null;
+
+    const noteEntities = testStep.notes.map((note) => {
+      const tagEntities = note.tags.map(
+        (tagName) =>
+          tagNameToEntity.get(tagName) ?? new TagEntity({ name: tagName })
+      );
+      return this.createNoteEntity(
+        note,
+        tagEntities,
+        screenshotFilePathToEntity
+      );
+    });
+    return new TestStepEntity({
+      pageTitle: testStep.operation.title,
+      pageUrl: testStep.operation.url,
+      operationType: testStep.operation.type,
+      operationInput: testStep.operation.input,
+      operationElement: JSON.stringify(testStep.operation.elementInfo),
+      inputElements: JSON.stringify(testStep.operation.inputElements),
+      windowHandle: testStep.operation.windowHandle,
+      keywordTexts: JSON.stringify(testStep.operation.keywordTexts ?? []),
+      timestamp: parseInt(testStep.operation.timestamp, 10),
+      screenshot: screenshotEntity,
+      testPurpose: testPurposeEntity,
+      notes: noteEntities,
+    });
+  }
+
+  private createNoteEntity(
+    note: {
+      id: string;
+      type: string;
+      value: string;
+      details: string;
+      imageFileUrl: string;
+      tags: string[];
+    },
+    tagEntities: TagEntity[],
+    screenshotFilePathToEntity: Map<string, ScreenshotEntity>
+  ) {
+    const screenshotEntity = screenshotFilePathToEntity.get(
+      path.basename(note.imageFileUrl)
+    );
+
+    return new NoteEntity({
+      value: note.value,
+      details: note.details,
+      timestamp: this.service.timestamp.unix(),
+      screenshot: screenshotEntity,
+      tags: tagEntities,
+    });
+  }
+
+  private createTestPurposeEntity(testPurpose: {
+    id: string;
+    type: string;
+    value: string;
+    details: string;
+    imageFileUrl: string;
+    tags: string[];
+  }) {
+    return new TestPurposeEntity({
+      title: testPurpose.value,
+      details: testPurpose.details,
+    });
   }
 }

@@ -29,21 +29,6 @@ interface ElementInfo {
   };
 }
 
-interface InputElementInfo {
-  title: string;
-  url: string;
-  inputElements: {
-    tagname: string;
-    text: string;
-    xpath: string;
-    value: string;
-    checked: boolean;
-    attributes: {
-      [key: string]: string;
-    };
-  };
-}
-
 interface CoverageSource {
   title: string;
   url: string;
@@ -59,7 +44,7 @@ interface CoverageSource {
   }[];
 }
 
-interface TestStep {
+export interface TestStep {
   id: string;
   operation: {
     input: string;
@@ -91,7 +76,7 @@ interface TestStep {
   }[];
 }
 
-interface TestResult {
+export interface TestResult {
   id: string;
   name: string;
   startTimeStamp: number;
@@ -99,7 +84,6 @@ interface TestResult {
   initialUrl: string;
   testSteps: TestStep[];
   coverageSources: CoverageSource[];
-  inputElementInfos: InputElementInfo[];
 }
 
 export type TestResultImportDataV1 = TestResultExportDataV1;
@@ -198,7 +182,6 @@ const deserializeTestResultV1 = (
     initialUrl: testResultImportData.initialUrl,
     testSteps,
     coverageSources: testResultImportData.coverageSources,
-    inputElementInfos: testResultImportData.inputElementInfos,
   };
   return testResult;
 };
@@ -263,7 +246,6 @@ const deserializeTestResultV0 = (
     initialUrl: testResultImportData.initialUrl,
     testSteps,
     coverageSources: testResultImportData.coverageSources,
-    inputElementInfos: testResultImportData.inputElementInfos,
   };
   return testResult;
 };

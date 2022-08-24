@@ -32,6 +32,8 @@ import { TestStepServiceImpl } from "@/services/TestStepService";
 import { ConfigsService } from "@/services/ConfigsService";
 import { NotesServiceImpl } from "@/services/NotesService";
 import { TestPurposeServiceImpl } from "@/services/TestPurposeService";
+import { TestResultImportService } from "@/services/TestResultImportService";
+import { ImportFileRepositoryServiceImpl } from "@/services/ImportFileRepositoryService";
 
 @Route("imports/projects")
 export class ProjectImportController extends Controller {

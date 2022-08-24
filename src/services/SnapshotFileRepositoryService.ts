@@ -307,7 +307,6 @@ export class SnapshotFileRepositoryServiceImpl
     const historyLogData = {
       history,
       coverageSources: testResult?.coverageSources ?? [],
-      inputElementInfos: testResult?.inputElementInfos ?? [],
     };
 
     // output log file

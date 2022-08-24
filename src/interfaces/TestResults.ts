@@ -109,18 +109,4 @@ interface TestResult {
       };
     }[];
   }[];
-  inputElementInfos: {
-    title: string;
-    url: string;
-    inputElements: {
-      tagname: string;
-      text: string;
-      xpath: string;
-      value: string;
-      checked: boolean;
-      attributes: {
-        [key: string]: string;
-      };
-    };
-  }[];
 }

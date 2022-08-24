@@ -21,7 +21,6 @@ export type CreateTestStepResponse = {
   id: string;
   operation: Operation;
   coverageSource: CoverageSource;
-  inputElementInfo?: InputElementInfo;
 };
 export type PatchTestStepResponse = TestStep;
 
@@ -29,12 +28,6 @@ export interface CoverageSource {
   title: string;
   url: string;
   screenElements: ElementInfo[];
-}
-
-export interface InputElementInfo {
-  title: string;
-  url: string;
-  inputElements: ElementInfo[];
 }
 
 export interface ElementInfo {

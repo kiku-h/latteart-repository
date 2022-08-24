@@ -31,7 +31,6 @@ import { getRepository } from "typeorm";
 import { TimestampService } from "./TimestampService";
 import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
-import { DefaultInputElementEntity } from "@/entities/DefaultInputElementEntity";
 import { ConfigsService } from "./ConfigsService";
 import {
   DiffCheckFunction,
@@ -110,11 +109,6 @@ export class TestStepServiceImpl implements TestStepService {
       relations: ["coverageSources"],
     });
 
-    const { defaultInputElements: defaultInputElementsEntity } =
-      await getRepository(TestResultEntity).findOneOrFail(testResultId, {
-        relations: ["defaultInputElements"],
-      });
-
     const targetCoverageSource = testResultEntity.coverageSources?.find(
       (coverageSource) => {
         return (
@@ -147,18 +141,8 @@ export class TestStepServiceImpl implements TestStepService {
       );
     }
 
-    defaultInputElementsEntity?.push(
-      new DefaultInputElementEntity({
-        title: requestBody.title,
-        url: requestBody.url,
-        inputElements: JSON.stringify(requestBody.inputElements),
-        testResult: testResultEntity,
-      })
-    );
-
     const savedTestResultEntity = await getRepository(TestResultEntity).save({
       ...testResultEntity,
-      defaultInputElements: defaultInputElementsEntity,
     });
 
     // add test step.
@@ -205,18 +189,10 @@ export class TestStepServiceImpl implements TestStepService {
         : [],
     };
 
-    // result input element info.
-    const inputElementInfo = {
-      title: requestBody.title,
-      url: requestBody.url,
-      inputElements: requestBody.inputElements,
-    };
-
     return {
       id: newTestStepEntity.id,
       operation,
       coverageSource,
-      inputElementInfo,
     };
   }
 

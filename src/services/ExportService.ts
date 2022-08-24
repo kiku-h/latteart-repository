@@ -93,20 +93,6 @@ export type TestResultExportDataV1 = {
       };
     }[];
   }[];
-  inputElementInfos: {
-    title: string;
-    url: string;
-    inputElements: {
-      tagname: string;
-      text: string;
-      xpath: string;
-      value: string;
-      checked: boolean;
-      attributes: {
-        [key: string]: string;
-      };
-    };
-  }[];
 };
 
 export interface ExportService {
@@ -230,7 +216,6 @@ export class ExportServiceImpl implements ExportService {
       history,
       notes,
       coverageSources: testResult.coverageSources,
-      inputElementInfos: testResult.inputElementInfos,
     };
 
     return JSON.stringify(data);

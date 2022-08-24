@@ -22,7 +22,6 @@ import {
   RelationId,
 } from "typeorm";
 import { CoverageSourceEntity } from "./CoverageSourceEntity";
-import { DefaultInputElementEntity } from "./DefaultInputElementEntity";
 import { TestStepEntity } from "./TestStepEntity";
 import { TestPurposeEntity } from "./TestPurposeEntity";
 import { NoteEntity } from "./NoteEntity";
@@ -66,13 +65,6 @@ export class TestResultEntity {
     { cascade: true }
   )
   coverageSources?: CoverageSourceEntity[];
-
-  @OneToMany(
-    () => DefaultInputElementEntity,
-    (defaultInputElement) => defaultInputElement.testResult,
-    { cascade: true }
-  )
-  defaultInputElements?: DefaultInputElementEntity[];
 
   @OneToMany(() => TestPurposeEntity, (testPurpose) => testPurpose.testResult, {
     cascade: true,

@@ -166,9 +166,7 @@ describe("ProjectImportService", () => {
       );
       expect(result).toEqual([
         {
-          screenshots: [
-            { data: "", filePath: "test-results/testResultId1/aaaa.webp" },
-          ],
+          screenshots: [{ data: "", filePath: "aaaa.webp" }],
           testResultFile: {
             data: "{1}",
             fileName: "test-results/testResultId1/log.json",
@@ -176,9 +174,7 @@ describe("ProjectImportService", () => {
           testResultId: "testResultId1",
         },
         {
-          screenshots: [
-            { data: "", filePath: "test-results/testResultId2/bbbb.webp" },
-          ],
+          screenshots: [{ data: "", filePath: "bbbb.webp" }],
           testResultFile: {
             data: "{2}",
             fileName: "test-results/testResultId2/log.json",
@@ -186,106 +182,6 @@ describe("ProjectImportService", () => {
           testResultId: "testResultId2",
         },
       ]);
-    });
-  });
-
-  describe("#importTestResults", () => {
-    it("テスト結果の登録", async () => {
-      const timestampService: TimestampService = createTimestampServiceMock();
-      const testResultService: TestResultService =
-        createTestResultServiceMock();
-      testResultService.createTestResult = jest.fn().mockResolvedValue({
-        id: "testResultId",
-      });
-      const testStepService: TestStepService = createTestStepServiceMock();
-      testStepService.createTestStep = jest.fn().mockResolvedValue({
-        id: "testStepId",
-      });
-      const notesService: NotesService = createNotesServiceMock();
-      const testPurposeService: TestPurposeService =
-        createTestPurposeServiceMock();
-      testPurposeService.createTestPurpose = jest.fn().mockResolvedValue({
-        id: "testPurposeId",
-      });
-
-      const testResult: any = {
-        version: 0,
-        name: "session_xxx",
-        sessionId: "xxxx-xxxx-xxxx-xxxx",
-        startTimestamp: 1641263325,
-        endTimestamp: 1,
-        initialUrl: "http:localhost:3000",
-        history: {
-          "1": {
-            testStep: {
-              timestamp: "1641263336921",
-              imageFileUrl:
-                "56e836bd-87a8-4834-8c13-529002b14b5b_compressed.webp",
-              windowInfo: {
-                windowHandle: "CDwindow-83BF9E3354052DD29237FE5377C948C2",
-              },
-              pageInfo: {
-                title: "test",
-                url: "http:localhost:3000",
-                keywordTexts: ["test"],
-              },
-              operation: {
-                input: "",
-                type: "screen_transition",
-                elementInfo: null,
-              },
-              inputElements: [],
-            },
-            intention: "1de00c52-fa30-42b8-b1bb-51642877db88",
-            bugs: [],
-            notices: [],
-          },
-        },
-        notes: [
-          {
-            id: "1de00c52-fa30-42b8-b1bb-51642877db88",
-            type: "intention",
-            value: "最初のテスト目的",
-            details: "",
-            imageFileUrl: "",
-            tags: [],
-          },
-        ],
-        coverageSources: [
-          {
-            title: "test",
-            url: "http://localhost:3000",
-            screenElements: [],
-          },
-        ],
-        inputElementInfos: [],
-      };
-
-      const testResultData = [
-        {
-          screenshots: [
-            { data: "", filePath: "test-results/testResultId1/aaaa.webp" },
-          ],
-          testResultFile: {
-            data: JSON.stringify(testResult),
-            fileName: "test-results/testResultId1/log.json",
-          },
-          testResultId: "testResultId1",
-        },
-      ];
-
-      const service = new ProjectImportService();
-      await service["importTestResults"](testResultData, {
-        timestampService,
-        testResultService,
-        testStepService,
-        notesService,
-        testPurposeService,
-      });
-
-      expect(testResultService.createTestResult).toHaveBeenCalledTimes(1);
-      expect(testStepService.createTestStep).toHaveBeenCalledTimes(1);
-      expect(testPurposeService.createTestPurpose).toHaveBeenCalledTimes(1);
     });
   });
 

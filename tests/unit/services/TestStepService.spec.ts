@@ -10,6 +10,7 @@ import { ConfigsService } from "@/services/ConfigsService";
 import { getRepository } from "typeorm";
 import { SqliteTestConnectionHelper } from "../../helper/TestConnectionHelper";
 import { CreateTestStepDto } from "@/interfaces/TestSteps";
+import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
 
 const testConnectionHelper = new SqliteTestConnectionHelper();
 
@@ -43,21 +44,42 @@ describe("TestStepService", () => {
         config: new ConfigsService(),
       });
 
+      const element1 = {
+        tagname: "tagname1",
+        xpath: "xpath1",
+        attributes: {},
+      };
+      const element2 = {
+        tagname: "tagname2",
+        xpath: "xpath2",
+        attributes: {},
+      };
+
+      const defaultScreenElements = [element1];
+
+      const coverageSourceEntity = new CoverageSourceEntity({
+        title: "title",
+        url: "url",
+        screenElements: JSON.stringify(defaultScreenElements),
+      });
+
       const testResultEntity = await getRepository(TestResultEntity).save(
-        new TestResultEntity()
+        new TestResultEntity({
+          coverageSources: [coverageSourceEntity],
+        })
       );
 
       const requestBody: CreateTestStepDto = {
         input: "input",
         type: "type",
-        elementInfo: null,
+        elementInfo: element2,
         title: "title",
         url: "url",
         imageData: "imageData",
         windowHandle: "windowHandle",
-        screenElements: [],
-        inputElements: [],
-        keywordTexts: [],
+        screenElements: [element2],
+        inputElements: [element2],
+        keywordTexts: ["keywordTexts"],
         timestamp: 0,
         pageSource: "pageSource",
       };
@@ -75,18 +97,6 @@ describe("TestStepService", () => {
         keywordTexts: requestBody.keywordTexts,
       };
 
-      const coverageSource = {
-        title: requestBody.title,
-        url: requestBody.url,
-        screenElements: requestBody.screenElements,
-      };
-
-      const inputElementInfo = {
-        title: requestBody.title,
-        url: requestBody.url,
-        inputElements: requestBody.inputElements,
-      };
-
       const result = await service.createTestStep(
         testResultEntity.id,
         requestBody
@@ -95,8 +105,14 @@ describe("TestStepService", () => {
       expect(result).toEqual({
         id: expect.any(String),
         operation: operationData,
-        coverageSource: coverageSource,
-        inputElementInfo: inputElementInfo,
+        coverageSource: {
+          title: requestBody.title,
+          url: requestBody.url,
+          screenElements: [
+            ...defaultScreenElements,
+            ...requestBody.screenElements,
+          ],
+        },
       });
 
       expect(imageFileRepositoryService.writeBase64ToFile).toBeCalledWith(

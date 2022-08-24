@@ -20,7 +20,6 @@ import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { TestResultService } from "./TestResultService";
 import path from "path";
 import { readZip } from "@/lib/zipReader";
-import { deserializeTestResult } from "@/lib/deserializeTestResult";
 import { TestPurposeService } from "./TestPurposeService";
 import { NotesService } from "./NotesService";
 import { TestMatrixEntity } from "@/entities/TestMatrixEntity";
@@ -38,6 +37,8 @@ import { TransactionRunner } from "@/TransactionRunner";
 import { TestProgressEntity } from "@/entities/TestProgressEntity";
 import { unixtimeToDate } from "@/lib/timeUtil";
 import { DailyTestProgress } from "./TestProgressService";
+import { TestResultImportService } from "./TestResultImportService";
+import { ImportFileRepositoryServiceImpl } from "./ImportFileRepositoryService";
 
 interface TestResultData {
   testResultId: string;
@@ -79,6 +80,15 @@ export class ProjectImportService {
       transactionRunner: TransactionRunner;
     }
   ): Promise<{ projectId: string }> {
+    const testResultImportService = new TestResultImportService({
+      importFileRepository: new ImportFileRepositoryServiceImpl({
+        staticDirectory: service.importDirectoryService,
+        imageFileRepository: service.screenshotRepositoryService,
+        timestamp: service.timestampService,
+      }),
+      imageFileRepository: service.screenshotRepositoryService,
+      timestamp: service.timestampService,
+    });
     const { testResultFiles, projectFiles } = await this.readImportFile(
       importFile.data,
       {
@@ -92,11 +102,7 @@ export class ProjectImportService {
     if (includeTestResults) {
       const testResultDatas = this.extractTestResultsData(testResultFiles);
       testResultIdMap = await this.importTestResults(testResultDatas, {
-        timestampService: service.timestampService,
-        testResultService: service.testResultService,
-        testStepService: service.testStepService,
-        notesService: service.notesService,
-        testPurposeService: service.testPurposeService,
+        testResultImportService,
       });
     }
 
@@ -206,7 +212,7 @@ export class ProjectImportService {
         [".png", ".webp"].includes(path.extname(testResultFile.filePath))
       ) {
         testResultObj.screenshots.push({
-          filePath: testResultFile.filePath,
+          filePath: path.basename(testResultFile.filePath),
           data:
             typeof testResultFile.data !== "string"
               ? testResultFile.data.toString("base64")
@@ -507,94 +513,33 @@ export class ProjectImportService {
   private async importTestResults(
     testResultDatas: TestResultData[],
     service: {
-      timestampService: TimestampService;
-      testResultService: TestResultService;
-      testStepService: TestStepService;
-      notesService: NotesService;
-      testPurposeService: TestPurposeService;
+      testResultImportService: TestResultImportService;
     }
   ): Promise<Map<string, string>> {
-    const testResultIdMap: Map<string, string> = new Map();
-
-    for (const testResultData of testResultDatas) {
-      const testResult = deserializeTestResult(
-        testResultData.testResultFile.data
-      );
-      const newTestResult = await service.testResultService.createTestResult(
-        testResult,
-        null
-      );
-
-      testResultIdMap.set(testResult.id, newTestResult.id);
-
-      await Promise.all(
-        testResult.testSteps.map(async (testStep) => {
-          const newTestStep = await service.testStepService.createTestStep(
-            newTestResult.id,
-            {
-              input: testStep.operation.input,
-              type: testStep.operation.type,
-              elementInfo: testStep.operation.elementInfo,
-              title: testStep.operation.title,
-              url: testStep.operation.url,
-              imageData:
-                testResultData.screenshots.find(
-                  (screenshot) =>
-                    path.basename(screenshot.filePath) ===
-                    path.basename(testStep.operation.imageFileUrl)
-                )?.data ?? "",
-              windowHandle: testStep.operation.windowHandle,
-              screenElements:
-                testResult.coverageSources.find(
-                  (coverageSource) =>
-                    coverageSource.title === testStep.operation.title &&
-                    coverageSource.url === testStep.operation.url
-                )?.screenElements ?? [],
-              inputElements: testStep.operation.inputElements,
-              keywordTexts: testStep.operation.keywordTexts,
-              timestamp: parseInt(testStep.operation.timestamp, 10),
-              pageSource: "",
-            }
-          );
-          console.log(newTestStep);
-
-          if (testStep.testPurpose) {
-            const newTestPurpose =
-              await service.testPurposeService.createTestPurpose(
-                newTestResult.id,
-                testStep.testPurpose
-              );
-
-            await service.testStepService.attachTestPurposeToTestStep(
-              newTestStep.id,
-              newTestPurpose.id
-            );
-          }
-
-          const newNoteIds = await Promise.all(
-            testStep.notes.map(async (note) => {
-              const imageData =
-                testResultData.screenshots.find(
-                  (screenshot) => screenshot.filePath === note.imageFileUrl
-                )?.data ?? "";
-
-              return (
-                await service.notesService.createNote(newTestResult.id, {
-                  ...note,
-                  imageData,
-                })
-              ).id;
-            })
-          );
-
-          await service.testStepService.attachNotesToTestStep(
-            newTestStep.id,
-            newNoteIds
-          );
+    const savedTestResultIds =
+      await service.testResultImportService.saveImportFileDatas(
+        ...testResultDatas.map((data) => {
+          return {
+            importFileData: {
+              testResultFile: data.testResultFile,
+              screenshots: data.screenshots,
+            },
+            testResultId: data.testResultId,
+          };
         })
       );
-    }
-    return testResultIdMap;
+
+    return new Map(
+      savedTestResultIds.flatMap<[string, string]>(
+        ({ newTestResultId, oldTestResultId }) => {
+          if (!oldTestResultId) {
+            return [];
+          }
+
+          return [[oldTestResultId, newTestResultId]];
+        }
+      )
+    );
   }
 
   private async readImportFile(

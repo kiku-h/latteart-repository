@@ -43,7 +43,6 @@ const emptyTestResult: GetTestResultResponse = {
   initialUrl: "",
   testSteps: [],
   coverageSources: [],
-  inputElementInfos: [],
 };
 
 beforeEach(async () => {

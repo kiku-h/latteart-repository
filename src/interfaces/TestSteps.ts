@@ -16,13 +16,19 @@
 
 export type CreateTestStepDto = CapturedOperation;
 
-export type GetTestStepResponse = TestStep;
+export type GetTestStepResponse = {
+  id: string;
+  operation: Omit<Operation, "screenElements">;
+  intention: string | null;
+  bugs: string[];
+  notices: string[];
+};
 export type CreateTestStepResponse = {
   id: string;
   operation: Operation;
   coverageSource: CoverageSource;
 };
-export type PatchTestStepResponse = TestStep;
+export type PatchTestStepResponse = GetTestStepResponse;
 
 export interface CoverageSource {
   title: string;
@@ -42,17 +48,19 @@ export interface ElementInfo {
 interface CapturedOperation {
   input: string;
   type: string;
-  elementInfo: ElementInfo | null;
+  elementInfo: CapturedElementInfo | null;
   title: string;
   url: string;
   imageData: string;
   windowHandle: string;
-  screenElements: ElementInfo[];
-  inputElements: ElementInfo[];
+  screenElements: CapturedElementInfo[];
+  inputElements: CapturedElementInfo[];
   keywordTexts?: string[];
   timestamp: number;
   pageSource: string;
 }
+
+export type CapturedElementInfo = ElementInfo & { ownedText: string };
 
 export interface Operation {
   input: string;
@@ -65,6 +73,7 @@ export interface Operation {
   inputElements: ElementInfo[];
   windowHandle: string;
   keywordTexts?: string[];
+  screenElements?: { tagname: string; text?: string | null }[];
 }
 
 export interface TestStep {

@@ -145,6 +145,17 @@ export class TestStepServiceImpl implements TestStepService {
       ...testResultEntity,
     });
 
+    const screenTagAndText = requestBody.screenElements
+      .filter((element) => {
+        return element.ownedText;
+      })
+      .map((element) => {
+        return {
+          tagname: element.tagname,
+          ownedText: element.ownedText,
+        };
+      });
+
     // add test step.
     const newTestStepEntity = await getRepository(TestStepEntity).save({
       pageTitle: requestBody.title,
@@ -155,6 +166,7 @@ export class TestStepServiceImpl implements TestStepService {
       inputElements: JSON.stringify(requestBody.inputElements),
       windowHandle: requestBody.windowHandle,
       keywordTexts: JSON.stringify(requestBody.keywordTexts ?? []),
+      screenElements: JSON.stringify(screenTagAndText),
       timestamp: requestBody.timestamp,
       testResult: savedTestResultEntity,
     });

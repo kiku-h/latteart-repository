@@ -66,6 +66,7 @@ import { UpdateTestResultEntity1657003075570 } from "./migrations/1657003075570-
 import { TestProgressEntity } from "./entities/TestProgressEntity";
 import { AddTestProgressEntity1657768635961 } from "./migrations/1657768635961-AddTestProgressEntity";
 import { DeleteDefaultInputElementEntity1661223982605 } from "./migrations/1661223982605-DeleteDefaultInputElementEntity";
+import { UpdateTestStepEntity1661479210527 } from "./migrations/1661479210527-UpdateTestStepEntity";
 
 LoggingService.initialize(
   new StandardLogger(
@@ -159,6 +160,7 @@ async function initializeOrmConnection(connectionName: string) {
       UpdateTestResultEntity1657003075570,
       AddTestProgressEntity1657768635961,
       DeleteDefaultInputElementEntity1661223982605,
+      UpdateTestStepEntity1661479210527,
     ],
   };
 

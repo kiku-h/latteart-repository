@@ -65,23 +65,27 @@ export default class FileArchiver {
 
     const archive = archiver("zip", { zlib: { level: 1 } });
 
-    archive.pipe(writeStream);
-
-    const buffer = Buffer.alloc(this.sourcePath.length);
-    buffer.write(this.sourcePath);
-    const decordedSourcePath = String.fromCharCode(
-      ...encoding.convert(buffer, "UNICODE")
-    );
-
-    if (sourceIsDirectory) {
-      archive.directory(decordedSourcePath, false);
-    } else {
-      archive.file(decordedSourcePath, {
-        name: path.basename(decordedSourcePath),
+    await new Promise<void>((resolve) => {
+      archive.pipe(writeStream).on("close", () => {
+        resolve();
       });
-    }
 
-    await archive.finalize();
+      const buffer = Buffer.alloc(this.sourcePath.length);
+      buffer.write(this.sourcePath);
+      const decordedSourcePath = String.fromCharCode(
+        ...encoding.convert(buffer, "UNICODE")
+      );
+
+      if (sourceIsDirectory) {
+        archive.directory(decordedSourcePath, false);
+      } else {
+        archive.file(decordedSourcePath, {
+          name: path.basename(decordedSourcePath),
+        });
+      }
+
+      archive.finalize();
+    });
 
     if (this.option.deleteSource) {
       await fs.remove(this.sourcePath);

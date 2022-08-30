@@ -73,7 +73,7 @@ export interface Operation {
   inputElements: ElementInfo[];
   windowHandle: string;
   keywordTexts?: string[];
-  screenElements?: { tagname: string; text?: string | null }[];
+  screenElements?: { tagname: string; ownedText?: string | null }[];
 }
 
 export interface TestStep {

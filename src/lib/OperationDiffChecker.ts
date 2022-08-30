@@ -16,22 +16,9 @@
 
 import { Operation } from "@/interfaces/TestSteps";
 
-function diffCheckByText<T>(a: T, b: T, excludeTagsNames: string[]) {
+function diffCheckByText<T>(a: T, b: T) {
   const textA = typeof a === "string" ? a : JSON.stringify(a);
   const textB = typeof b === "string" ? b : JSON.stringify(b);
-
-  const isIgnore = excludeTagsNames
-    .map((tag) => {
-      return (
-        textA.indexOf(tag.toUpperCase()) !== -1 ||
-        textB.indexOf(tag.toUpperCase()) !== -1
-      );
-    })
-    .some((value) => value === true);
-
-  if (isIgnore) {
-    return undefined;
-  }
 
   return textA === textB ? undefined : { a: textA, b: textB };
 }
@@ -61,6 +48,7 @@ export class OperationDiffChecker {
       ["url", {}],
       ["windowHandle", {}],
       ["keywordTexts", {}],
+      ["screenElements", {}],
       ...paramNameToOptions,
     ]);
   }
@@ -72,15 +60,20 @@ export class OperationDiffChecker {
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }> {
+    const excludeTags = excludeTagsNames.map((tag) => tag.toLowerCase());
     const result = Object.fromEntries(
       Array.from(this.paramNameToOptions.entries()).flatMap(
         ([paramName, option]) => {
-          const valueA = a ? a[paramName] : undefined;
-          const valueB = b ? b[paramName] : undefined;
+          const valueA = a
+            ? this.excludeText(a, paramName, excludeTags)
+            : undefined;
+          const valueB = b
+            ? this.excludeText(b, paramName, excludeTags)
+            : undefined;
 
           const diff = option.func
             ? option.func(valueA, valueB)
-            : diffCheckByText(valueA, valueB, excludeTagsNames);
+            : diffCheckByText(valueA, valueB);
 
           return diff ? [[option.name ?? paramName, diff]] : [];
         }
@@ -88,5 +81,27 @@ export class OperationDiffChecker {
     );
 
     return result;
+  }
+
+  private excludeText(
+    operation: Operation,
+    paramName: keyof Operation,
+    excludeTags: string[]
+  ) {
+    if (paramName === "elementInfo") {
+      const elementInfo = operation[paramName];
+      const exists = elementInfo
+        ? excludeTags.includes(elementInfo.tagname.toLowerCase())
+        : false;
+
+      return exists ? "" : elementInfo;
+    }
+    if (paramName === "screenElements") {
+      const screenElements = operation[paramName];
+      return screenElements?.filter((element) => {
+        return !excludeTags.includes(element.tagname.toLowerCase());
+      });
+    }
+    return operation[paramName];
   }
 }

@@ -214,7 +214,7 @@ describe("OperationDiffChecker", () => {
     });
 
     it("無視するタグを指定している場合は、差分があっても無視する", async () => {
-      const excludeTags: string[] = ["textarea"];
+      const excludeTags: string[] = ["button", "textarea"];
       const elementInfoA = {
         tagname: "textarea",
         text: "text",
@@ -232,15 +232,21 @@ describe("OperationDiffChecker", () => {
         attributes: { attributeKey: "attributeValue" },
       };
       const keywordTexts = ["aaa", "bbb", "ddd"];
+      const screenElements = [
+        { tagname: "BUTTON", ownedText: "ボタン" },
+        { tagname: "INPUT", ownedText: "aaaa" },
+      ];
       const operationA: Operation = {
         ...baseOperation,
         elementInfo: elementInfoA,
         keywordTexts,
+        screenElements,
       };
       const operationB: Operation = {
         ...baseOperation,
         elementInfo: elementInfoB,
         keywordTexts,
+        screenElements,
       };
 
       expect(

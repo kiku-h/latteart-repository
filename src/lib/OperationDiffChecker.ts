@@ -46,8 +46,6 @@ export class OperationDiffChecker {
       ["elementInfo", {}],
       ["title", {}],
       ["url", {}],
-      ["windowHandle", {}],
-      ["keywordTexts", {}],
       ["screenElements", {}],
       ...paramNameToOptions,
     ]);

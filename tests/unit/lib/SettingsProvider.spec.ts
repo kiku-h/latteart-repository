@@ -44,8 +44,14 @@ describe("SettingsProvider", () => {
         },
         compare: {
           exclude: {
-            isEnabled: false,
-            tags: "",
+            query: {
+              isEnabled: false,
+              item: "",
+            },
+            tags: {
+              isEnabled: false,
+              item: "",
+            },
           },
         },
       },
@@ -202,8 +208,14 @@ describe("SettingsProvider", () => {
           },
           compare: {
             exclude: {
-              isEnabled: false,
-              tags: "",
+              query: {
+                isEnabled: false,
+                item: "",
+              },
+              tags: {
+                isEnabled: false,
+                item: "",
+              },
             },
           },
         },
@@ -284,8 +296,14 @@ describe("SettingsProvider", () => {
           },
           compare: {
             exclude: {
-              isEnabled: false,
-              tags: "",
+              query: {
+                isEnabled: false,
+                item: "",
+              },
+              tags: {
+                isEnabled: false,
+                item: "",
+              },
             },
           },
         },

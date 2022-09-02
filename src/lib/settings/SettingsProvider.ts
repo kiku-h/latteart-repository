@@ -212,15 +212,28 @@ export class SettingsProvider {
     if (source.config && source.config.compare) {
       const sourceCompare = source.config.compare;
 
-      if (sourceCompare.exclude && sourceCompare.exclude.isEnabled) {
+      if (sourceCompare.exclude && sourceCompare.exclude.query.isEnabled) {
         Object.assign(
-          target.config.compare.exclude.isEnabled,
-          source.config.compare.exclude.isEnabled
+          target.config.compare.exclude.query.isEnabled,
+          source.config.compare.exclude.query.isEnabled
         );
       }
 
-      if (sourceCompare.exclude && sourceCompare.exclude.tags) {
-        target.config.compare.exclude.tags = sourceCompare.exclude.tags;
+      if (sourceCompare.exclude && sourceCompare.exclude.tags.isEnabled) {
+        Object.assign(
+          target.config.compare.exclude.tags.isEnabled,
+          source.config.compare.exclude.tags.isEnabled
+        );
+      }
+
+      if (sourceCompare.exclude && sourceCompare.exclude.query.item) {
+        target.config.compare.exclude.query.item =
+          sourceCompare.exclude.query.item;
+      }
+
+      if (sourceCompare.exclude && sourceCompare.exclude.tags.item) {
+        target.config.compare.exclude.tags.item =
+          sourceCompare.exclude.tags.item;
       }
     }
   }

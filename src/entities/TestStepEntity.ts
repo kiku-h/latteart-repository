@@ -46,6 +46,9 @@ export class TestStepEntity {
   @Column({ name: "keyword_texts" })
   keywordTexts: string = "[]";
 
+  @Column({ name: "screen_elements" })
+  screenElements: string = "[]";
+
   @Column({ name: "operation_type" })
   operationType: string = "";
 

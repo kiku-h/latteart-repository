@@ -69,7 +69,8 @@ export interface TestResultService {
   compareTestResults(
     testResultId1: string,
     testResultId2: string,
-    option?: Partial<{ excludeParamNames: string[] }>
+    option?: Partial<{ excludeParamNames: string[] }>,
+    excludeTagsNames?: string[]
   ): Promise<{
     diffs: {
       [key: string]: {
@@ -325,7 +326,8 @@ export class TestResultServiceImpl implements TestResultService {
   public async compareTestResults(
     testResultId1: string,
     testResultId2: string,
-    option: Partial<{ excludeParamNames: string[] }> = {}
+    option: Partial<{ excludeParamNames: string[] }> = {},
+    excludeTagsNames: string[]
   ): Promise<{
     diffs: {
       [key: string]: {
@@ -354,7 +356,8 @@ export class TestResultServiceImpl implements TestResultService {
           return this.service.testStep.compareTestSteps(
             testStepId1,
             testStepId2,
-            option
+            option,
+            excludeTagsNames
           );
         })
     );

@@ -29,7 +29,12 @@ export class TestResultDiffController extends Controller {
   @Post()
   public async create(
     @Path() testResultId: string,
-    @Body() requestBody: { targetTestResultId: string; excludeQuery?: string }
+    @Body()
+    requestBody: {
+      targetTestResultId: string;
+      excludeQuery?: string;
+      excludeTags?: string;
+    }
   ): Promise<{
     diffs: {
       [key: string]: {
@@ -41,6 +46,7 @@ export class TestResultDiffController extends Controller {
     url: string;
   }> {
     const excludeParamNames = requestBody.excludeQuery?.split(",") ?? [];
+    const excludeTagsNames = requestBody.excludeTags?.split(",") ?? [];
 
     const timestampService = new TimestampServiceImpl();
     const imageFileRepositoryService = new ImageFileRepositoryServiceImpl({
@@ -56,9 +62,14 @@ export class TestResultDiffController extends Controller {
           timestamp: timestampService,
           config: new ConfigsService(),
         }),
-      }).compareTestResults(testResultId, requestBody.targetTestResultId, {
-        excludeParamNames,
-      });
+      }).compareTestResults(
+        testResultId,
+        requestBody.targetTestResultId,
+        {
+          excludeParamNames,
+        },
+        excludeTagsNames
+      );
 
       return result;
     } catch (error) {

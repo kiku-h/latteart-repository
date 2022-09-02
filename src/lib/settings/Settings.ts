@@ -40,6 +40,7 @@ export default class Settings {
     screenDefinition: ScreenDefinition;
     coverage: Coverage;
     imageCompression: ImageCompression;
+    compare: CompareInfo;
   };
   public captureSettings: {
     ignoreTags: string[];
@@ -77,6 +78,18 @@ export default class Settings {
         isDeleteSrcImage: true,
         command: "cwebp {filePath} -o {dirPath}/{baseName}.webp",
       },
+      compare: {
+        exclude: {
+          query: {
+            isEnabled: false,
+            item: "",
+          },
+          tags: {
+            isEnabled: false,
+            item: "",
+          },
+        },
+      },
     };
     this.captureSettings = {
       ignoreTags: [],
@@ -99,6 +112,19 @@ export interface ImageCompression {
   isEnabled: boolean;
   isDeleteSrcImage: boolean;
   command: string;
+}
+
+export interface CompareInfo {
+  exclude: {
+    query: {
+      isEnabled: boolean;
+      item: string;
+    };
+    tags: {
+      isEnabled: boolean;
+      item: string;
+    };
+  };
 }
 
 export interface ScreenDefinitionConditionGroup {

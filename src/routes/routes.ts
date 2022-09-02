@@ -55,9 +55,9 @@ import { ViewPointsController } from "./../controllers/ViewPointsController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { StoriesController } from "./../controllers/StoriesController";
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { CompressedImageController } from "./../controllers/CompressedImageController";
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ProjectTestScriptsController } from "./../controllers/ProjectTestScriptsController";
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { CompressedImageController } from "./../controllers/CompressedImageController";
 import * as express from "express";
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1065,6 +1065,22 @@ const models: TsoaRoute.Models = {
       },
       windowHandle: { dataType: "string", required: true },
       keywordTexts: { dataType: "array", array: { dataType: "string" } },
+      screenElements: {
+        dataType: "array",
+        array: {
+          dataType: "nestedObjectLiteral",
+          nestedProperties: {
+            text: {
+              dataType: "union",
+              subSchemas: [
+                { dataType: "string" },
+                { dataType: "enum", enums: [null] },
+              ],
+            },
+            tagname: { dataType: "string", required: true },
+          },
+        },
+      },
     },
     additionalProperties: false,
   },
@@ -1096,6 +1112,23 @@ const models: TsoaRoute.Models = {
     },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  CapturedElementInfo: {
+    dataType: "refAlias",
+    type: {
+      dataType: "intersection",
+      subSchemas: [
+        { ref: "ElementInfo" },
+        {
+          dataType: "nestedObjectLiteral",
+          nestedProperties: {
+            ownedText: { dataType: "string", required: true },
+          },
+        },
+      ],
+      validators: {},
+    },
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   CapturedOperation: {
     dataType: "refObject",
     properties: {
@@ -1104,7 +1137,7 @@ const models: TsoaRoute.Models = {
       elementInfo: {
         dataType: "union",
         subSchemas: [
-          { ref: "ElementInfo" },
+          { ref: "CapturedElementInfo" },
           { dataType: "enum", enums: [null] },
         ],
         required: true,
@@ -1115,12 +1148,12 @@ const models: TsoaRoute.Models = {
       windowHandle: { dataType: "string", required: true },
       screenElements: {
         dataType: "array",
-        array: { dataType: "refObject", ref: "ElementInfo" },
+        array: { dataType: "refAlias", ref: "CapturedElementInfo" },
         required: true,
       },
       inputElements: {
         dataType: "array",
-        array: { dataType: "refObject", ref: "ElementInfo" },
+        array: { dataType: "refAlias", ref: "CapturedElementInfo" },
         required: true,
       },
       keywordTexts: { dataType: "array", array: { dataType: "string" } },
@@ -1135,41 +1168,78 @@ const models: TsoaRoute.Models = {
     type: { ref: "CapturedOperation", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  TestStep: {
-    dataType: "refObject",
-    properties: {
-      id: { dataType: "string", required: true },
-      operation: { ref: "Operation", required: true },
-      intention: {
-        dataType: "union",
-        subSchemas: [
-          { dataType: "string" },
-          { dataType: "enum", enums: [null] },
-        ],
-        required: true,
+  "Pick_Operation.Exclude_keyofOperation.screenElements__": {
+    dataType: "refAlias",
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        input: { dataType: "string", required: true },
+        type: { dataType: "string", required: true },
+        elementInfo: {
+          dataType: "union",
+          subSchemas: [
+            { ref: "ElementInfo" },
+            { dataType: "enum", enums: [null] },
+          ],
+          required: true,
+        },
+        title: { dataType: "string", required: true },
+        url: { dataType: "string", required: true },
+        imageFileUrl: { dataType: "string", required: true },
+        timestamp: { dataType: "string", required: true },
+        inputElements: {
+          dataType: "array",
+          array: { dataType: "refObject", ref: "ElementInfo" },
+          required: true,
+        },
+        windowHandle: { dataType: "string", required: true },
+        keywordTexts: { dataType: "array", array: { dataType: "string" } },
       },
-      bugs: {
-        dataType: "array",
-        array: { dataType: "string" },
-        required: true,
-      },
-      notices: {
-        dataType: "array",
-        array: { dataType: "string" },
-        required: true,
-      },
+      validators: {},
     },
-    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  "Omit_Operation.screenElements_": {
+    dataType: "refAlias",
+    type: {
+      ref: "Pick_Operation.Exclude_keyofOperation.screenElements__",
+      validators: {},
+    },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   GetTestStepResponse: {
     dataType: "refAlias",
-    type: { ref: "TestStep", validators: {} },
+    type: {
+      dataType: "nestedObjectLiteral",
+      nestedProperties: {
+        notices: {
+          dataType: "array",
+          array: { dataType: "string" },
+          required: true,
+        },
+        bugs: {
+          dataType: "array",
+          array: { dataType: "string" },
+          required: true,
+        },
+        intention: {
+          dataType: "union",
+          subSchemas: [
+            { dataType: "string" },
+            { dataType: "enum", enums: [null] },
+          ],
+          required: true,
+        },
+        operation: { ref: "Omit_Operation.screenElements_", required: true },
+        id: { dataType: "string", required: true },
+      },
+      validators: {},
+    },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   PatchTestStepResponse: {
     dataType: "refAlias",
-    type: { ref: "TestStep", validators: {} },
+    type: { ref: "GetTestStepResponse", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   PatchTestStepDto: {
@@ -2745,6 +2815,7 @@ export function RegisterRoutes(app: express.Router) {
           required: true,
           dataType: "nestedObjectLiteral",
           nestedProperties: {
+            excludeTags: { dataType: "string" },
             excludeQuery: { dataType: "string" },
             targetTestResultId: { dataType: "string", required: true },
           },
@@ -3263,48 +3334,6 @@ export function RegisterRoutes(app: express.Router) {
   );
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   app.post(
-    "/api/v1/test-results/:testResultId/test-steps/:testStepId/compressed-image",
-
-    function CompressedImageController_create(
-      request: any,
-      response: any,
-      next: any
-    ) {
-      const args = {
-        testResultId: {
-          in: "path",
-          name: "testResultId",
-          required: true,
-          dataType: "string",
-        },
-        testStepId: {
-          in: "path",
-          name: "testStepId",
-          required: true,
-          dataType: "string",
-        },
-      };
-
-      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-      let validatedArgs: any[] = [];
-      try {
-        validatedArgs = getValidatedArgs(args, request, response);
-
-        const controller = new CompressedImageController();
-
-        const promise = controller.create.apply(
-          controller,
-          validatedArgs as any
-        );
-        promiseHandler(controller, promise, response, undefined, next);
-      } catch (err) {
-        return next(err);
-      }
-    }
-  );
-  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-  app.post(
     "/api/v1/projects/:projectId/test-scripts",
 
     function ProjectTestScriptsController_create(
@@ -3334,6 +3363,48 @@ export function RegisterRoutes(app: express.Router) {
         validatedArgs = getValidatedArgs(args, request, response);
 
         const controller = new ProjectTestScriptsController();
+
+        const promise = controller.create.apply(
+          controller,
+          validatedArgs as any
+        );
+        promiseHandler(controller, promise, response, undefined, next);
+      } catch (err) {
+        return next(err);
+      }
+    }
+  );
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  app.post(
+    "/api/v1/test-results/:testResultId/test-steps/:testStepId/compressed-image",
+
+    function CompressedImageController_create(
+      request: any,
+      response: any,
+      next: any
+    ) {
+      const args = {
+        testResultId: {
+          in: "path",
+          name: "testResultId",
+          required: true,
+          dataType: "string",
+        },
+        testStepId: {
+          in: "path",
+          name: "testStepId",
+          required: true,
+          dataType: "string",
+        },
+      };
+
+      // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+      let validatedArgs: any[] = [];
+      try {
+        validatedArgs = getValidatedArgs(args, request, response);
+
+        const controller = new CompressedImageController();
 
         const promise = controller.create.apply(
           controller,

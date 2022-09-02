@@ -26,6 +26,7 @@ import {
   PatchTestStepResponse,
   ElementInfo,
   Operation,
+  TestStep,
 } from "@/interfaces/TestSteps";
 import { getRepository } from "typeorm";
 import { TimestampService } from "./TimestampService";
@@ -76,7 +77,8 @@ export interface TestStepService {
   compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    option?: Partial<{ excludeParamNames: string[] }>
+    option?: Partial<{ excludeParamNames: string[] }>,
+    excludeTagsNames?: string[]
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }>;
@@ -95,6 +97,12 @@ export class TestStepServiceImpl implements TestStepService {
     const testStepEntity = await this.getTestStepEntity(testStepId);
 
     return this.convertTestStepEntityToTestStep(testStepEntity);
+  }
+
+  public async getTestStepForDiff(testStepId: string): Promise<TestStep> {
+    const testStepEntity = await this.getTestStepEntity(testStepId);
+
+    return this.convertTestStepEntityToTestStepForDiff(testStepEntity);
   }
 
   public async createTestStep(
@@ -144,6 +152,17 @@ export class TestStepServiceImpl implements TestStepService {
       ...testResultEntity,
     });
 
+    const screenTagAndText = requestBody.screenElements
+      .filter((element) => {
+        return element.ownedText;
+      })
+      .map((element) => {
+        return {
+          tagname: element.tagname,
+          ownedText: element.ownedText,
+        };
+      });
+
     // add test step.
     const newTestStepEntity = await getRepository(TestStepEntity).save({
       pageTitle: requestBody.title,
@@ -154,6 +173,7 @@ export class TestStepServiceImpl implements TestStepService {
       inputElements: JSON.stringify(requestBody.inputElements),
       windowHandle: requestBody.windowHandle,
       keywordTexts: JSON.stringify(requestBody.keywordTexts ?? []),
+      screenElements: JSON.stringify(screenTagAndText),
       timestamp: requestBody.timestamp,
       testResult: savedTestResultEntity,
     });
@@ -280,18 +300,23 @@ export class TestStepServiceImpl implements TestStepService {
   public async compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    option: Partial<{ excludeParamNames: string[] }> = {}
+    option: Partial<{ excludeParamNames: string[] }> = {},
+    excludeTagsNames: string[]
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }> {
-    const testStep1 = await this.getTestStep(testStepId1).catch((error) => {
-      LoggingService.warn(error);
-      return undefined;
-    });
-    const testStep2 = await this.getTestStep(testStepId2).catch((error) => {
-      LoggingService.warn(error);
-      return undefined;
-    });
+    const testStep1 = await this.getTestStepForDiff(testStepId1).catch(
+      (error) => {
+        LoggingService.warn(error);
+        return undefined;
+      }
+    );
+    const testStep2 = await this.getTestStepForDiff(testStepId2).catch(
+      (error) => {
+        LoggingService.warn(error);
+        return undefined;
+      }
+    );
 
     const paramNameToOptions: [
       paramName: keyof Operation,
@@ -303,7 +328,8 @@ export class TestStepServiceImpl implements TestStepService {
 
     return new OperationDiffChecker(...paramNameToOptions).diff(
       testStep1?.operation,
-      testStep2?.operation
+      testStep2?.operation,
+      excludeTagsNames
     );
   }
 
@@ -322,10 +348,38 @@ export class TestStepServiceImpl implements TestStepService {
     };
   }
 
+  private async getOperationFromTestStepEntityForDiff(
+    testStepEntity: TestStepEntity
+  ) {
+    return {
+      input: testStepEntity.operationInput,
+      type: testStepEntity.operationType,
+      elementInfo: JSON.parse(testStepEntity.operationElement),
+      title: testStepEntity.pageTitle,
+      url: testStepEntity.pageUrl,
+      imageFileUrl: testStepEntity.screenshot?.fileUrl ?? "",
+      timestamp: testStepEntity.timestamp.toString(),
+      inputElements: JSON.parse(testStepEntity.inputElements),
+      windowHandle: testStepEntity.windowHandle,
+      keywordTexts: JSON.parse(testStepEntity.keywordTexts),
+      screenElements: JSON.parse(testStepEntity.screenElements),
+    };
+  }
+
   private async convertTestStepEntityToTestStep(entity: TestStepEntity) {
     return {
       id: entity.id,
       operation: await this.getOperationFromTestStepEntity(entity),
+      intention: entity.testPurpose ? entity.testPurpose.id : null,
+      bugs: [],
+      notices: entity.notes?.map((note) => note.id) ?? [],
+    };
+  }
+
+  private async convertTestStepEntityToTestStepForDiff(entity: TestStepEntity) {
+    return {
+      id: entity.id,
+      operation: await this.getOperationFromTestStepEntityForDiff(entity),
       intention: entity.testPurpose ? entity.testPurpose.id : null,
       bugs: [],
       notices: entity.notes?.map((note) => note.id) ?? [],

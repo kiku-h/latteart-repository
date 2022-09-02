@@ -53,6 +53,9 @@ describe("TestStepService", () => {
         tagname: "tagname2",
         xpath: "xpath2",
         attributes: {},
+        text: "text",
+        value: "value",
+        ownedText: "ownedText",
       };
 
       const defaultScreenElements = [element1];

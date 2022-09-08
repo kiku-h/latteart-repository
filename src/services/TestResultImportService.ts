@@ -18,7 +18,7 @@ import path from "path";
 import { ImportFileRepositoryService } from "./ImportFileRepositoryService";
 import {
   deserializeTestResult,
-  TestResult,
+  ImportTestResult,
   TestStep,
 } from "@/lib/deserializeTestResult";
 import { getRepository } from "typeorm";
@@ -145,7 +145,7 @@ export class TestResultImportService {
   }
 
   private createTestResultEntity(
-    testResult: TestResult,
+    testResult: ImportTestResult,
     screenshotFilePathToEntity: Map<string, ScreenshotEntity>,
     tagNameToEntity: Map<string, TagEntity>
   ) {
@@ -175,6 +175,7 @@ export class TestResultImportService {
       name:
         testResult.name ??
         `session_${this.service.timestamp.format("YYYYMMDD_HHmmss")}`,
+      source: testResult.source ?? "",
       startTimestamp:
         testResult.startTimeStamp ?? testResult.initialUrl
           ? this.service.timestamp.epochMilliseconds()
@@ -222,6 +223,7 @@ export class TestResultImportService {
       inputElements: JSON.stringify(testStep.operation.inputElements),
       windowHandle: testStep.operation.windowHandle,
       keywordTexts: JSON.stringify(testStep.operation.keywordTexts ?? []),
+      screenElements: JSON.stringify(testStep.operation.screenElements ?? []),
       timestamp: parseInt(testStep.operation.timestamp, 10),
       screenshot: screenshotEntity,
       testPurpose: testPurposeEntity,

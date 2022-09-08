@@ -70,6 +70,20 @@ export interface TestStepService {
     keywordTexts: any;
   }>;
 
+  getTestStepOperationForDB(testStepId: string): Promise<{
+    input: string;
+    type: string;
+    elementInfo: any;
+    title: string;
+    url: string;
+    imageFileUrl: string;
+    timestamp: string;
+    inputElements: any;
+    windowHandle: string;
+    keywordTexts: any;
+    screenElements: any;
+  }>;
+
   getTestStepScreenshot(
     testStepId: string
   ): Promise<{ id: string; fileUrl: string }>;
@@ -281,6 +295,29 @@ export class TestStepServiceImpl implements TestStepService {
     return this.getOperationFromTestStepEntity(testStepEntity);
   }
 
+  public async getTestStepOperationForDB(testStepId: string): Promise<{
+    input: string;
+    type: string;
+    elementInfo: any;
+    title: string;
+    url: string;
+    imageFileUrl: string;
+    timestamp: string;
+    inputElements: any;
+    windowHandle: string;
+    keywordTexts: any;
+    screenElements: any;
+  }> {
+    const testStepEntity = await getRepository(TestStepEntity).findOneOrFail(
+      testStepId,
+      {
+        relations: ["screenshot"],
+      }
+    );
+
+    return this.getOperationFromTestStepEntityForDB(testStepEntity);
+  }
+
   public async getTestStepScreenshot(
     testStepId: string
   ): Promise<{ id: string; fileUrl: string }> {
@@ -348,7 +385,7 @@ export class TestStepServiceImpl implements TestStepService {
     };
   }
 
-  private async getOperationFromTestStepEntityForDiff(
+  private async getOperationFromTestStepEntityForDB(
     testStepEntity: TestStepEntity
   ) {
     return {
@@ -379,7 +416,7 @@ export class TestStepServiceImpl implements TestStepService {
   private async convertTestStepEntityToTestStepForDiff(entity: TestStepEntity) {
     return {
       id: entity.id,
-      operation: await this.getOperationFromTestStepEntityForDiff(entity),
+      operation: await this.getOperationFromTestStepEntityForDB(entity),
       intention: entity.testPurpose ? entity.testPurpose.id : null,
       bugs: [],
       notices: entity.notes?.map((note) => note.id) ?? [],

@@ -66,7 +66,7 @@ export class ProjectExportService {
           await service.testResultService.collectAllTestStepScreenshots(
             testResultEntity.id
           );
-        const testResult = await service.testResultService.getTestResult(
+        const testResult = await service.testResultService.getTestResultForDB(
           testResultEntity.id
         );
         if (!testResult) {

@@ -104,7 +104,12 @@ describe("TestResultImportService", () => {
           windowInfo: {
             windowHandle: "windowHandle",
           },
-          pageInfo: { title: "title", url: "url", keywordTexts: [] },
+          pageInfo: {
+            title: "title",
+            url: "url",
+            keywordTexts: [],
+            screenElements: [],
+          },
           operation: {
             input: "input",
             type: "type",

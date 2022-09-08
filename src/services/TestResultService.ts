@@ -27,6 +27,7 @@ import {
   CreateTestResultResponse,
   GetTestResultResponse,
   PatchTestResultResponse,
+  GetTestResultForDB,
 } from "@/interfaces/TestResults";
 import { TransactionRunner } from "@/TransactionRunner";
 import { getRepository } from "typeorm";
@@ -45,6 +46,8 @@ export interface TestResultService {
   getTestResultIdentifiers(): Promise<ListTestResultResponse[]>;
 
   getTestResult(id: string): Promise<GetTestResultResponse | undefined>;
+
+  getTestResultForDB(id: string): Promise<GetTestResultForDB | undefined>;
 
   createTestResult(
     body: CreateTestResultDto,
@@ -130,6 +133,41 @@ export class TestResultServiceImpl implements TestResultService {
         coverageSources,
         ...testResultEntity,
       });
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  public async getTestResultForDB(
+    id: string
+  ): Promise<GetTestResultForDB | undefined> {
+    try {
+      const isForDB = true;
+      const testResultEntity = await getRepository(
+        TestResultEntity
+      ).findOneOrFail(id, {
+        relations: [
+          "testSteps",
+          "testSteps.screenshot",
+          "testSteps.notes",
+          "testSteps.notes.tags",
+          "testSteps.notes.screenshot",
+          "testSteps.testPurpose",
+        ],
+      });
+      const { coverageSources } = await getRepository(
+        TestResultEntity
+      ).findOneOrFail(id, {
+        relations: ["coverageSources"],
+      });
+
+      return await this.convertTestResultEntityToTestResult(
+        {
+          coverageSources,
+          ...testResultEntity,
+        },
+        isForDB
+      );
     } catch (error) {
       return undefined;
     }
@@ -390,7 +428,8 @@ export class TestResultServiceImpl implements TestResultService {
   }
 
   private async convertTestResultEntityToTestResult(
-    testResultEntity: TestResultEntity
+    testResultEntity: TestResultEntity,
+    isForDB?: boolean
   ) {
     const testSteps = await Promise.all(
       testResultEntity.testSteps
@@ -398,9 +437,9 @@ export class TestResultServiceImpl implements TestResultService {
           return first.timestamp - second.timestamp;
         })
         .map(async (testStep) => {
-          const operation = await this.service.testStep.getTestStepOperation(
-            testStep.id
-          );
+          const operation = isForDB
+            ? await this.service.testStep.getTestStepOperationForDB(testStep.id)
+            : await this.service.testStep.getTestStepOperation(testStep.id);
           const notes =
             testStep.notes?.map((note) => {
               return {

@@ -73,15 +73,15 @@ export interface TestStepService {
   getTestStepOperationForDB(testStepId: string): Promise<{
     input: string;
     type: string;
-    elementInfo: any;
+    elementInfo: ElementInfo | null;
     title: string;
     url: string;
     imageFileUrl: string;
     timestamp: string;
-    inputElements: any;
+    inputElements: ElementInfo[];
     windowHandle: string;
-    keywordTexts: any;
-    screenElements: any;
+    keywordTexts: string[];
+    screenElements: { tagname: string; ownedText?: string | null }[];
   }>;
 
   getTestStepScreenshot(
@@ -298,15 +298,15 @@ export class TestStepServiceImpl implements TestStepService {
   public async getTestStepOperationForDB(testStepId: string): Promise<{
     input: string;
     type: string;
-    elementInfo: any;
+    elementInfo: ElementInfo | null;
     title: string;
     url: string;
     imageFileUrl: string;
     timestamp: string;
-    inputElements: any;
+    inputElements: ElementInfo[];
     windowHandle: string;
-    keywordTexts: any;
-    screenElements: any;
+    keywordTexts: string[];
+    screenElements: { tagname: string; ownedText?: string | null }[];
   }> {
     const testStepEntity = await getRepository(TestStepEntity).findOneOrFail(
       testStepId,

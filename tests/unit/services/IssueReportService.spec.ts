@@ -37,6 +37,7 @@ describe("IssueReportService", () => {
       const testResultService: TestResultService = {
         getTestResultIdentifiers: jest.fn(),
         getTestResult: jest.fn(),
+        getTestResultForDB: jest.fn(),
         createTestResult: jest.fn(),
         patchTestResult: jest.fn(),
         collectAllTestStepIds: jest.fn().mockResolvedValue(expectedTestStepIds),
@@ -54,6 +55,7 @@ describe("IssueReportService", () => {
         attachNotesToTestStep: jest.fn(),
         attachTestPurposeToTestStep: jest.fn(),
         getTestStepOperation: jest.fn(),
+        getTestStepOperationForDB: jest.fn(),
         getTestStepScreenshot: jest.fn(),
         compareTestSteps: jest.fn(),
       };

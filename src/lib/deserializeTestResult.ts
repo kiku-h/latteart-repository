@@ -15,34 +15,16 @@
  */
 
 import {
+  Note,
+  TestResultElementInfo,
+  TestResultWithoutTestSteps,
+} from "@/interfaces/TestResults";
+import {
   HistoryItemExportDataV1,
   TestResultExportDataV1,
 } from "@/services/ExportService";
-interface ElementInfo {
-  tagname: string;
-  text: string;
-  xpath: string;
-  value: string;
-  checked: boolean;
-  attributes: {
-    [key: string]: string;
-  };
-}
 
-interface CoverageSource {
-  title: string;
-  url: string;
-  screenElements: {
-    tagname: string;
-    text: string;
-    xpath: string;
-    value: string;
-    checked: boolean;
-    attributes: {
-      [key: string]: string;
-    };
-  }[];
-}
+type ElementInfo = TestResultElementInfo;
 
 export interface TestStep {
   id: string;
@@ -57,34 +39,15 @@ export interface TestStep {
     windowHandle: string;
     inputElements: ElementInfo[];
     keywordTexts: string[];
+    screenElements?: { tagname: string; ownedText?: string | null }[];
   };
-  testPurpose: {
-    id: string;
-    type: string;
-    value: string;
-    details: string;
-    imageFileUrl: string;
-    tags: string[];
-  } | null;
-  notes: {
-    id: string;
-    type: string;
-    value: string;
-    details: string;
-    imageFileUrl: string;
-    tags: string[];
-  }[];
+  testPurpose: Note | null;
+  notes: Note[];
 }
 
-export interface TestResult {
-  id: string;
-  name: string;
-  startTimeStamp: number;
-  endTimeStamp: number;
-  initialUrl: string;
+export type ImportTestResult = TestResultWithoutTestSteps & {
   testSteps: TestStep[];
-  coverageSources: CoverageSource[];
-}
+};
 
 export type TestResultImportDataV1 = TestResultExportDataV1;
 export type HistoryItemImportDataV1 = HistoryItemExportDataV1;
@@ -104,7 +67,9 @@ export type TestResultImportDataV0 = Omit<
   };
 };
 
-export const deserializeTestResult = (testResultData: string): TestResult => {
+export const deserializeTestResult = (
+  testResultData: string
+): ImportTestResult => {
   const testResultImportData = JSON.parse(testResultData);
 
   const version: number = testResultImportData.version ?? 0;
@@ -167,6 +132,7 @@ const deserializeTestResultV1 = (
         windowHandle: item.testStep.windowInfo.windowHandle,
         inputElements: item.testStep.inputElements,
         keywordTexts: item.testStep.pageInfo.keywordTexts,
+        screenElements: item.testStep.pageInfo.screenElements ?? [],
       },
       testPurpose,
       notes,
@@ -232,6 +198,7 @@ const deserializeTestResultV0 = (
         windowHandle: item.testStep.windowInfo.windowHandle,
         inputElements: item.testStep.inputElements,
         keywordTexts: item.testStep.pageInfo.keywordTexts,
+        screenElements: [],
       },
       testPurpose,
       notes,
@@ -241,6 +208,7 @@ const deserializeTestResultV0 = (
   const testResult = {
     id: testResultImportData.sessionId,
     name: testResultImportData.name,
+    source: "",
     startTimeStamp: testResultImportData.startTimeStamp,
     endTimeStamp: testResultImportData.endTimeStamp,
     initialUrl: testResultImportData.initialUrl,

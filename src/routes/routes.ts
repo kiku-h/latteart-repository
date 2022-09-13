@@ -726,6 +726,24 @@ const models: TsoaRoute.Models = {
     type: { ref: "Pick_TestResult.id-or-name-or-source_", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+  TestResultElementInfo: {
+    dataType: "refObject",
+    properties: {
+      tagname: { dataType: "string", required: true },
+      text: { dataType: "string", required: true },
+      xpath: { dataType: "string", required: true },
+      value: { dataType: "string", required: true },
+      checked: { dataType: "boolean", required: true },
+      attributes: {
+        dataType: "nestedObjectLiteral",
+        nestedProperties: {},
+        additionalProperties: { dataType: "string" },
+        required: true,
+      },
+    },
+    additionalProperties: false,
+  },
+  // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   TestResult: {
     dataType: "refObject",
     properties: {
@@ -742,60 +760,18 @@ const models: TsoaRoute.Models = {
           nestedProperties: {
             notices: {
               dataType: "array",
-              array: {
-                dataType: "nestedObjectLiteral",
-                nestedProperties: {
-                  tags: {
-                    dataType: "array",
-                    array: { dataType: "string" },
-                    required: true,
-                  },
-                  imageFileUrl: { dataType: "string", required: true },
-                  details: { dataType: "string", required: true },
-                  value: { dataType: "string", required: true },
-                  type: { dataType: "string", required: true },
-                  id: { dataType: "string", required: true },
-                },
-              },
+              array: { dataType: "refObject", ref: "Note" },
               required: true,
             },
             bugs: {
               dataType: "array",
-              array: {
-                dataType: "nestedObjectLiteral",
-                nestedProperties: {
-                  tags: {
-                    dataType: "array",
-                    array: { dataType: "string" },
-                    required: true,
-                  },
-                  imageFileUrl: { dataType: "string", required: true },
-                  details: { dataType: "string", required: true },
-                  value: { dataType: "string", required: true },
-                  type: { dataType: "string", required: true },
-                  id: { dataType: "string", required: true },
-                },
-              },
+              array: { dataType: "refObject", ref: "Note" },
               required: true,
             },
             intention: {
               dataType: "union",
               subSchemas: [
-                {
-                  dataType: "nestedObjectLiteral",
-                  nestedProperties: {
-                    tags: {
-                      dataType: "array",
-                      array: { dataType: "string" },
-                      required: true,
-                    },
-                    imageFileUrl: { dataType: "string", required: true },
-                    details: { dataType: "string", required: true },
-                    value: { dataType: "string", required: true },
-                    type: { dataType: "string", required: true },
-                    id: { dataType: "string", required: true },
-                  },
-                },
+                { ref: "Note" },
                 { dataType: "enum", enums: [null] },
               ],
               required: true,
@@ -810,20 +786,8 @@ const models: TsoaRoute.Models = {
                 inputElements: {
                   dataType: "array",
                   array: {
-                    dataType: "nestedObjectLiteral",
-                    nestedProperties: {
-                      attributes: {
-                        dataType: "nestedObjectLiteral",
-                        nestedProperties: {},
-                        additionalProperties: { dataType: "string" },
-                        required: true,
-                      },
-                      checked: { dataType: "boolean", required: true },
-                      value: { dataType: "string", required: true },
-                      xpath: { dataType: "string", required: true },
-                      text: { dataType: "string", required: true },
-                      tagname: { dataType: "string", required: true },
-                    },
+                    dataType: "refObject",
+                    ref: "TestResultElementInfo",
                   },
                   required: true,
                 },
@@ -835,22 +799,7 @@ const models: TsoaRoute.Models = {
                 elementInfo: {
                   dataType: "union",
                   subSchemas: [
-                    {
-                      dataType: "nestedObjectLiteral",
-                      nestedProperties: {
-                        attributes: {
-                          dataType: "nestedObjectLiteral",
-                          nestedProperties: {},
-                          additionalProperties: { dataType: "string" },
-                          required: true,
-                        },
-                        checked: { dataType: "boolean", required: true },
-                        value: { dataType: "string", required: true },
-                        xpath: { dataType: "string", required: true },
-                        text: { dataType: "string", required: true },
-                        tagname: { dataType: "string", required: true },
-                      },
-                    },
+                    { ref: "TestResultElementInfo" },
                     { dataType: "enum", enums: [null] },
                   ],
                   required: true,
@@ -872,22 +821,7 @@ const models: TsoaRoute.Models = {
           nestedProperties: {
             screenElements: {
               dataType: "array",
-              array: {
-                dataType: "nestedObjectLiteral",
-                nestedProperties: {
-                  attributes: {
-                    dataType: "nestedObjectLiteral",
-                    nestedProperties: {},
-                    additionalProperties: { dataType: "string" },
-                    required: true,
-                  },
-                  checked: { dataType: "boolean", required: true },
-                  value: { dataType: "string", required: true },
-                  xpath: { dataType: "string", required: true },
-                  text: { dataType: "string", required: true },
-                  tagname: { dataType: "string", required: true },
-                },
-              },
+              array: { dataType: "refObject", ref: "TestResultElementInfo" },
               required: true,
             },
             url: { dataType: "string", required: true },
@@ -906,12 +840,8 @@ const models: TsoaRoute.Models = {
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   CreateTestResultResponse: {
-    dataType: "refObject",
-    properties: {
-      id: { dataType: "string", required: true },
-      name: { dataType: "string", required: true },
-    },
-    additionalProperties: false,
+    dataType: "refAlias",
+    type: { ref: "Pick_TestResult.id-or-name-or-source_", validators: {} },
   },
   // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
   CreateTestResultDto: {
@@ -1070,7 +1000,7 @@ const models: TsoaRoute.Models = {
         array: {
           dataType: "nestedObjectLiteral",
           nestedProperties: {
-            text: {
+            ownedText: {
               dataType: "union",
               subSchemas: [
                 { dataType: "string" },

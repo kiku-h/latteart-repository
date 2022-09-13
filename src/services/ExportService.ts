@@ -17,7 +17,10 @@
 import { TestResultService } from "./TestResultService";
 import { ExportFileRepositoryService } from "./ExportFileRepositoryService";
 import path from "path";
-import { GetTestResultResponse } from "@/interfaces/TestResults";
+import {
+  GetTestResultForDB,
+  GetTestResultResponse,
+} from "@/interfaces/TestResults";
 
 export type HistoryItemExportDataV1 = {
   testStep: {
@@ -30,6 +33,7 @@ export type HistoryItemExportDataV1 = {
       title: string;
       url: string;
       keywordTexts: string[];
+      screenElements: { tagname: string; ownedText?: string | null }[];
     };
     operation: {
       input: string;
@@ -116,7 +120,7 @@ export class ExportServiceImpl implements ExportService {
     const screenshots =
       await this.service.testResult.collectAllTestStepScreenshots(testResultId);
 
-    const testResult = await this.service.testResult.getTestResult(
+    const testResult = await this.service.testResult.getTestResultForDB(
       testResultId
     );
 
@@ -135,7 +139,7 @@ export class ExportServiceImpl implements ExportService {
     return { url };
   }
 
-  public serializeTestResult(testResult: GetTestResultResponse): string {
+  public serializeTestResult(testResult: GetTestResultForDB): string {
     const convertImageFileUrl = (beforeUrl: string) => {
       return path.basename(beforeUrl);
     };
@@ -157,6 +161,7 @@ export class ExportServiceImpl implements ExportService {
                 title: testStep.operation.title,
                 url: testStep.operation.url,
                 keywordTexts: testStep.operation.keywordTexts ?? [],
+                screenElements: testStep.operation.screenElements ?? [],
               },
               operation: {
                 input: testStep.operation.input,

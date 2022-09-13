@@ -213,6 +213,7 @@ export class TestResultServiceImpl implements TestResultService {
     return {
       id: newTestResult.id,
       name: newTestResult.name,
+      source: newTestResult.source,
     };
   }
 

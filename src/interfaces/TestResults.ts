@@ -23,10 +23,11 @@ export interface CreateTestResultDto {
 
 export type ListTestResultResponse = Pick<TestResult, "id" | "name" | "source">;
 
-export interface CreateTestResultResponse {
-  id: string;
-  name: string;
-}
+export type CreateTestResultResponse = Pick<
+  TestResult,
+  "id" | "name" | "source"
+>;
+
 export type GetTestResultResponse = TestResult;
 export type PatchTestResultResponse = TestResult;
 

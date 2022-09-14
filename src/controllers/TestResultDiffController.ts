@@ -62,14 +62,10 @@ export class TestResultDiffController extends Controller {
           timestamp: timestampService,
           config: new ConfigsService(),
         }),
-      }).compareTestResults(
-        testResultId,
-        requestBody.targetTestResultId,
-        {
-          excludeParamNames,
-        },
-        excludeTagsNames
-      );
+      }).compareTestResults(testResultId, requestBody.targetTestResultId, {
+        excludeParamNames,
+        excludeTagsNames,
+      });
 
       return result;
     } catch (error) {

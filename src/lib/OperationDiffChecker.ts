@@ -54,11 +54,13 @@ export class OperationDiffChecker {
   public async diff(
     a: Operation | undefined,
     b: Operation | undefined,
-    excludeTagsNames: string[]
+    excludeTagsNames: string[] | undefined
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }> {
-    const excludeTags = excludeTagsNames.map((tag) => tag.toLowerCase());
+    const excludeTags = excludeTagsNames
+      ? excludeTagsNames.map((tag) => tag.toLowerCase())
+      : [];
     const result = Object.fromEntries(
       Array.from(this.paramNameToOptions.entries()).flatMap(
         ([paramName, option]) => {
@@ -86,6 +88,10 @@ export class OperationDiffChecker {
     paramName: keyof Operation,
     excludeTags: string[]
   ) {
+    if (excludeTags.length === 0) {
+      return operation[paramName];
+    }
+
     if (paramName === "elementInfo") {
       const elementInfo = operation[paramName];
       const exists = elementInfo

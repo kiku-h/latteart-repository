@@ -17,6 +17,7 @@ describe("OperationDiffChecker", () => {
       inputElements: [],
       windowHandle: "",
       keywordTexts: [],
+      screenElements: [],
     };
 
     const excludeTagsNames: string[] = [];
@@ -39,7 +40,6 @@ describe("OperationDiffChecker", () => {
           type: "aaa",
           title: "aaa",
           url: "aaa",
-          windowHandle: "aaa",
         };
 
         expect(
@@ -65,10 +65,6 @@ describe("OperationDiffChecker", () => {
             a: "",
             b: "aaa",
           },
-          windowHandle: {
-            a: "",
-            b: "aaa",
-          },
         });
       });
 
@@ -81,11 +77,14 @@ describe("OperationDiffChecker", () => {
           checked: true,
           attributes: { attributeKey: "attributeValue" },
         };
-        const keywordTexts = ["aaa", "bbb", "ddd"];
+        const screenElements = [
+          { tagname: "aaa", ownedText: "aaa" },
+          { tagname: "bbb", ownedText: "bbb" },
+        ];
         const operation: Operation = {
           ...baseOperation,
           elementInfo,
-          keywordTexts,
+          screenElements,
         };
 
         expect(
@@ -99,9 +98,9 @@ describe("OperationDiffChecker", () => {
             a: "null",
             b: JSON.stringify(elementInfo),
           },
-          keywordTexts: {
+          screenElements: {
             a: "[]",
-            b: JSON.stringify(keywordTexts),
+            b: JSON.stringify(screenElements),
           },
         });
       });
@@ -121,6 +120,8 @@ describe("OperationDiffChecker", () => {
               attributes: { attributeKey: "attributeValue" },
             },
           ],
+          windowHandle: "windowHandle",
+          keywordTexts: ["aaa", "bbb", "ddd"],
         };
 
         expect(
@@ -194,11 +195,7 @@ describe("OperationDiffChecker", () => {
           a: "",
           b: undefined,
         },
-        windowHandle: {
-          a: "",
-          b: undefined,
-        },
-        keywordTexts: {
+        screenElements: {
           a: "[]",
           b: undefined,
         },
@@ -231,7 +228,6 @@ describe("OperationDiffChecker", () => {
         checked: true,
         attributes: { attributeKey: "attributeValue" },
       };
-      const keywordTexts = ["aaa", "bbb", "ddd"];
       const screenElements = [
         { tagname: "BUTTON", ownedText: "ボタン" },
         { tagname: "INPUT", ownedText: "aaaa" },
@@ -239,13 +235,11 @@ describe("OperationDiffChecker", () => {
       const operationA: Operation = {
         ...baseOperation,
         elementInfo: elementInfoA,
-        keywordTexts,
         screenElements,
       };
       const operationB: Operation = {
         ...baseOperation,
         elementInfo: elementInfoB,
-        keywordTexts,
         screenElements,
       };
 

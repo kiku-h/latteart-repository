@@ -112,6 +112,7 @@ describe("TestResultService", () => {
       const body: CreateTestResultDto = {
         initialUrl: "initialUrl",
         name: "session_name",
+        source: "source",
       };
 
       const result = await service.createTestResult(body, null);
@@ -119,6 +120,7 @@ describe("TestResultService", () => {
       expect(result).toEqual({
         id: expect.any(String),
         name: body.name,
+        source: body.source,
       });
     });
   });
@@ -218,7 +220,7 @@ describe("TestResultService", () => {
         await testStepService.createTestStep(testResultId2, {
           ...baseCreateTestStepRequestBody,
           input: "aaa",
-          keywordTexts: ["aaa"],
+          title: "aaa",
         });
         // テストステップ3(テスト結果2側にだけ存在)
         await testStepService.createTestStep(
@@ -239,9 +241,9 @@ describe("TestResultService", () => {
                 a: "",
                 b: "aaa",
               },
-              keywordTexts: {
-                a: "[]",
-                b: '["aaa"]',
+              title: {
+                a: "",
+                b: "aaa",
               },
             },
             {
@@ -265,11 +267,7 @@ describe("TestResultService", () => {
                 a: undefined,
                 b: "",
               },
-              windowHandle: {
-                a: undefined,
-                b: "",
-              },
-              keywordTexts: {
+              screenElements: {
                 a: undefined,
                 b: "[]",
               },
@@ -315,11 +313,7 @@ describe("TestResultService", () => {
                   a: undefined,
                   b: "",
                 },
-                windowHandle: {
-                  a: undefined,
-                  b: "",
-                },
-                keywordTexts: {
+                screenElements: {
                   a: undefined,
                   b: "[]",
                 },
@@ -364,11 +358,7 @@ describe("TestResultService", () => {
                   a: "",
                   b: undefined,
                 },
-                windowHandle: {
-                  a: "",
-                  b: undefined,
-                },
-                keywordTexts: {
+                screenElements: {
                   a: "[]",
                   b: undefined,
                 },
@@ -389,15 +379,25 @@ describe("TestResultService", () => {
         });
 
         it("オプションで無視するパラメータ名が指定されていた場合は、全ての操作でそのパラメータを比較対象から除外する", async () => {
+          const elementInfo = {
+            tagname: "textarea",
+            text: "text",
+            xpath: "xpath",
+            value: "value",
+            checked: true,
+            attributes: { attributeKey: "attributeValue" },
+            ownedText: "ownedText",
+          };
+
           // テスト結果1
           await testStepService.createTestStep(
             testResultId1,
             baseCreateTestStepRequestBody
           );
-          await testStepService.createTestStep(
-            testResultId1,
-            baseCreateTestStepRequestBody
-          );
+          await testStepService.createTestStep(testResultId1, {
+            ...baseCreateTestStepRequestBody,
+            elementInfo,
+          });
 
           // テスト結果2
           // テストステップ1(差分無し)
@@ -409,7 +409,8 @@ describe("TestResultService", () => {
           await testStepService.createTestStep(testResultId2, {
             ...baseCreateTestStepRequestBody,
             input: "aaa",
-            keywordTexts: ["aaa"],
+            title: "aaa",
+            elementInfo,
           });
           // テストステップ3(テスト結果2側にだけ存在)
           await testStepService.createTestStep(
@@ -417,7 +418,10 @@ describe("TestResultService", () => {
             baseCreateTestStepRequestBody
           );
 
-          const option = { excludeParamNames: ["input", "keywordTexts"] };
+          const option = {
+            excludeParamNames: ["input", "title"],
+            excludeTagsNames: ["textarea"],
+          };
 
           const result = await testResultService.compareTestResults(
             testResultId1,
@@ -438,17 +442,13 @@ describe("TestResultService", () => {
                   a: undefined,
                   b: "null",
                 },
-                title: {
-                  a: undefined,
-                  b: "",
-                },
                 url: {
                   a: undefined,
                   b: "",
                 },
-                windowHandle: {
+                screenElements: {
                   a: undefined,
-                  b: "",
+                  b: "[]",
                 },
               },
             ],

@@ -91,8 +91,10 @@ export interface TestStepService {
   compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    option?: Partial<{ excludeParamNames: string[] }>,
-    excludeTagsNames?: string[]
+    option?: Partial<{
+      excludeParamNames: string[];
+      excludeTagsNames: string[];
+    }>
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }>;
@@ -337,8 +339,10 @@ export class TestStepServiceImpl implements TestStepService {
   public async compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    option: Partial<{ excludeParamNames: string[] }> = {},
-    excludeTagsNames: string[]
+    option: Partial<{
+      excludeParamNames: string[];
+      excludeTagsNames: string[];
+    }> = {}
   ): Promise<{
     [key: string]: { a: string | undefined; b: string | undefined };
   }> {
@@ -366,7 +370,7 @@ export class TestStepServiceImpl implements TestStepService {
     return new OperationDiffChecker(...paramNameToOptions).diff(
       testStep1?.operation,
       testStep2?.operation,
-      excludeTagsNames
+      option.excludeTagsNames
     );
   }
 

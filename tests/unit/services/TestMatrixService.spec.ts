@@ -37,7 +37,7 @@ describe("TestMatrixService", () => {
         groups: [],
         viewPoints: [],
       });
-    });
+    }, 10000);
     it("異常系", async () => {
       const dummyId = "dummyId";
       try {

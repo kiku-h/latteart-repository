@@ -15,7 +15,11 @@
  */
 
 import { ScreenDefinitionConfig } from "../lib/ScreenDefFactory";
-import { AutofillSetting, Coverage } from "../lib/settings/Settings";
+import {
+  AutofillSetting,
+  CompareInfo,
+  Coverage,
+} from "../lib/settings/Settings";
 
 export type PutConfigDto = GetConfigResponse;
 
@@ -47,6 +51,7 @@ export interface GetConfigResponse {
       isEnabled: boolean;
       isDeleteSrcImage: boolean;
     };
+    compare: CompareInfo;
   };
   captureSettings: {
     ignoreTags: string[];

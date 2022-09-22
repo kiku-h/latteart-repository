@@ -28,7 +28,11 @@ import {
   PutDeviceConfigResponse,
 } from "@/interfaces/DeviceConfigs";
 import { ScreenDefinitionConfig } from "@/lib/ScreenDefFactory";
-import { AutofillSetting, Coverage } from "@/lib/settings/Settings";
+import {
+  AutofillSetting,
+  CompareInfo,
+  Coverage,
+} from "@/lib/settings/Settings";
 
 type configWithImageCompressionCommand = Omit<GetConfigResponse, "config"> & {
   config: {
@@ -40,6 +44,7 @@ type configWithImageCompressionCommand = Omit<GetConfigResponse, "config"> & {
       isDeleteSrcImage: boolean;
       command: string;
     };
+    compare: CompareInfo;
   };
 };
 

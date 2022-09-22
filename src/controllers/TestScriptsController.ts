@@ -24,7 +24,11 @@ import { TestScriptFileRepositoryServiceImpl } from "@/services/TestScriptFileRe
 import { TestStepServiceImpl } from "@/services/TestStepService";
 import { TimestampServiceImpl } from "@/services/TimestampService";
 import { Controller, Post, Route, Path, Body } from "tsoa";
-import { screenshotDirectoryService, testScriptDirectoryService } from "..";
+import {
+  screenshotDirectoryService,
+  tempDirectoryService,
+  testScriptDirectoryService,
+} from "..";
 import { CreateTestScriptDto } from "../interfaces/TestScripts";
 import { TestScriptsService } from "../services/TestScriptsService";
 
@@ -42,6 +46,7 @@ export class TestScriptsController extends Controller {
     });
 
     const testResultService = new TestResultServiceImpl({
+      staticDirectory: tempDirectoryService,
       timestamp: timestampService,
       testStep: new TestStepServiceImpl({
         imageFileRepository: imageFileRepositoryService,

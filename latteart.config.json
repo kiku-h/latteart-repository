@@ -165,6 +165,18 @@
       "isEnabled": true,
       "isDeleteSrcImage": true,
       "command": "cwebp {filePath} -o {dirPath}/{baseName}.webp"
+    },
+    "compare": {
+      "exclude": {
+        "query": {
+          "isEnabled": false,
+          "item": ""
+        },
+        "tags": {
+          "isEnabled": false,
+          "item": ""
+        }
+      }
     }
   },
   "captureSettings": {

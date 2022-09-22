@@ -17,63 +17,70 @@
 import LoggingService from "@/logger/LoggingService";
 import { ServerError, ServerErrorCode } from "@/ServerError";
 import { ConfigsService } from "@/services/ConfigsService";
-import { ExportServiceImpl } from "@/services/ExportService";
 import { ImageFileRepositoryServiceImpl } from "@/services/ImageFileRepositoryService";
 import { TestResultServiceImpl } from "@/services/TestResultService";
-import { ExportFileRepositoryServiceImpl } from "@/services/ExportFileRepositoryService";
 import { TestStepServiceImpl } from "@/services/TestStepService";
 import { TimestampServiceImpl } from "@/services/TimestampService";
 import { Controller, Post, Route, Path, Body } from "tsoa";
-import {
-  exportDirectoryService,
-  screenshotDirectoryService,
-  tempDirectoryService,
-} from "..";
-import { CreateTestResultExportDto } from "../interfaces/TestResultExport";
+import { screenshotDirectoryService, tempDirectoryService } from "..";
 
-@Route("test-results/{testResultId}/export")
-export class TestResultExportController extends Controller {
+@Route("test-results/{testResultId}/diffs")
+export class TestResultDiffController extends Controller {
   @Post()
   public async create(
     @Path() testResultId: string,
-    @Body() requestBody?: CreateTestResultExportDto
-  ): Promise<{ url: string }> {
-    const timestampService = new TimestampServiceImpl();
+    @Body()
+    requestBody: {
+      targetTestResultId: string;
+      excludeQuery?: string;
+      excludeTags?: string;
+    }
+  ): Promise<{
+    diffs: {
+      [key: string]: {
+        a?: string;
+        b?: string;
+      };
+    }[];
+    isSame: boolean;
+    url: string;
+  }> {
+    const excludeParamNames = requestBody.excludeQuery?.split(",") ?? [];
+    const excludeTagsNames = requestBody.excludeTags?.split(",") ?? [];
 
+    const timestampService = new TimestampServiceImpl();
     const imageFileRepositoryService = new ImageFileRepositoryServiceImpl({
       staticDirectory: screenshotDirectoryService,
     });
 
-    const testResultService = new TestResultServiceImpl({
-      staticDirectory: tempDirectoryService,
-      timestamp: timestampService,
-      testStep: new TestStepServiceImpl({
-        imageFileRepository: imageFileRepositoryService,
-        timestamp: timestampService,
-        config: new ConfigsService(),
-      }),
-    });
-
-    const exportFileRepositoryService = new ExportFileRepositoryServiceImpl({
-      staticDirectory: requestBody?.temp
-        ? tempDirectoryService
-        : exportDirectoryService,
-      imageFileRepository: imageFileRepositoryService,
-      timestamp: timestampService,
-    });
-
     try {
-      return await new ExportServiceImpl({
-        testResult: testResultService,
-        exportFileRepository: exportFileRepositoryService,
-      }).exportTestResult(testResultId);
+      const result = await new TestResultServiceImpl({
+        staticDirectory: tempDirectoryService,
+        timestamp: timestampService,
+        testStep: new TestStepServiceImpl({
+          imageFileRepository: imageFileRepositoryService,
+          timestamp: timestampService,
+          config: new ConfigsService(),
+        }),
+      }).compareTestResults(testResultId, requestBody.targetTestResultId, {
+        excludeParamNames,
+        excludeTagsNames,
+      });
+
+      return result;
     } catch (error) {
+      if (error instanceof ServerError) {
+        throw error;
+      }
+
       if (error instanceof Error) {
-        LoggingService.error("Export test result failed.", error);
+        LoggingService.error("Compare test result failed.", error);
+
         throw new ServerError(500, {
-          code: ServerErrorCode.EXPORT_TEST_RESULT_FAILED,
+          code: ServerErrorCode.COMPARE_TEST_RESULT_FAILED,
         });
       }
+
       throw error;
     }
   }

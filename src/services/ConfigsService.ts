@@ -31,6 +31,7 @@ import { ScreenDefinitionConfig } from "@/lib/ScreenDefFactory";
 import {
   AutofillSetting,
   AutoOperationSetting,
+  CompareInfo,
   Coverage,
 } from "@/lib/settings/Settings";
 
@@ -45,6 +46,7 @@ type configWithImageCompressionCommand = Omit<GetConfigResponse, "config"> & {
       isDeleteSrcImage: boolean;
       command: string;
     };
+    compare: CompareInfo;
   };
 };
 

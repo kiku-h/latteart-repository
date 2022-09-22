@@ -32,6 +32,7 @@ import {
   attachedFileDirectoryService,
   screenshotDirectoryService,
   snapshotDirectoryService,
+  tempDirectoryService,
   transactionRunner,
 } from "..";
 import { CreateResponse } from "../interfaces/Snapshots";
@@ -76,6 +77,7 @@ export class SnapshotsController extends Controller {
     });
 
     const testResultService = new TestResultServiceImpl({
+      staticDirectory: tempDirectoryService,
       timestamp: timestampService,
       testStep: testStepService,
     });

@@ -61,6 +61,18 @@ export class TestStepEntity {
   @Column({ name: "timestamp" })
   timestamp: number = 0;
 
+  @Column({ name: "scroll_position_x" })
+  scrollPositionX: string = "";
+
+  @Column({ name: "scroll_position_y" })
+  scrollPositionY: string = "";
+
+  @Column({ name: "window_innersize_width" })
+  windowInnerSizeWidth: string = "";
+
+  @Column({ name: "window_innersize_height" })
+  windowInnerSizeHeight: string = "";
+
   @ManyToOne(() => TestResultEntity, (testResult) => testResult.testSteps)
   @JoinColumn({ name: "test_result_id" })
   testResult?: TestResultEntity;

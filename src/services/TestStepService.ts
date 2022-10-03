@@ -130,6 +130,10 @@ export class TestStepServiceImpl implements TestStepService {
       ...testResultEntity,
     });
 
+    const numberToString = (s: number | undefined) => {
+      return s === undefined ? "" : String(s);
+    };
+
     // add test step.
     const newTestStepEntity = await getRepository(TestStepEntity).save({
       pageTitle: requestBody.title,
@@ -142,6 +146,12 @@ export class TestStepServiceImpl implements TestStepService {
       keywordTexts: JSON.stringify(requestBody.keywordTexts ?? []),
       timestamp: requestBody.timestamp,
       testResult: savedTestResultEntity,
+      scrollPositionX: numberToString(requestBody.scrollPosition?.x),
+      scrollPositionY: numberToString(requestBody.scrollPosition?.y),
+      windowInnerSizeWidth: numberToString(requestBody.windowInnerSize?.width),
+      windowInnerSizeHeight: numberToString(
+        requestBody.windowInnerSize?.height
+      ),
     });
     const screenshot = new ScreenshotEntity({
       fileUrl: await this.service.imageFileRepository.writeBase64ToFile(
@@ -275,6 +285,20 @@ export class TestStepServiceImpl implements TestStepService {
       inputElements: JSON.parse(testStepEntity.inputElements),
       windowHandle: testStepEntity.windowHandle,
       keywordTexts: JSON.parse(testStepEntity.keywordTexts),
+      scrollPosition:
+        testStepEntity.scrollPositionX === ""
+          ? null
+          : {
+              x: Number(testStepEntity.scrollPositionX),
+              y: Number(testStepEntity.scrollPositionY),
+            },
+      windowInnerSize:
+        testStepEntity.windowInnerSizeWidth === ""
+          ? null
+          : {
+              width: Number(testStepEntity.windowInnerSizeWidth),
+              height: Number(testStepEntity.windowInnerSizeHeight),
+            },
     };
   }
 

@@ -21,7 +21,11 @@ import { ImageFileRepositoryServiceImpl } from "@/services/ImageFileRepositorySe
 import { TestStepServiceImpl } from "@/services/TestStepService";
 import { TimestampServiceImpl } from "@/services/TimestampService";
 import { Controller, Get, Post, Patch, Route, Path, Body, Delete } from "tsoa";
-import { screenshotDirectoryService, transactionRunner } from "..";
+import {
+  screenshotDirectoryService,
+  tempDirectoryService,
+  transactionRunner,
+} from "..";
 import {
   ListTestResultResponse,
   CreateTestResultResponse,
@@ -43,6 +47,7 @@ export class TestResultsController extends Controller {
     });
 
     return new TestResultServiceImpl({
+      staticDirectory: tempDirectoryService,
       timestamp: timestampService,
       testStep: new TestStepServiceImpl({
         imageFileRepository: imageFileRepositoryService,
@@ -65,6 +70,7 @@ export class TestResultsController extends Controller {
 
     try {
       const testResult = await new TestResultServiceImpl({
+        staticDirectory: tempDirectoryService,
         timestamp: timestampService,
         testStep: new TestStepServiceImpl({
           imageFileRepository: imageFileRepositoryService,
@@ -109,6 +115,7 @@ export class TestResultsController extends Controller {
 
     try {
       const result = await new TestResultServiceImpl({
+        staticDirectory: tempDirectoryService,
         timestamp: timestampService,
         testStep: new TestStepServiceImpl({
           imageFileRepository: imageFileRepositoryService,
@@ -145,6 +152,7 @@ export class TestResultsController extends Controller {
 
     try {
       return await new TestResultServiceImpl({
+        staticDirectory: tempDirectoryService,
         timestamp: timestampService,
         testStep: new TestStepServiceImpl({
           imageFileRepository: imageFileRepositoryService,
@@ -173,6 +181,7 @@ export class TestResultsController extends Controller {
       staticDirectory: screenshotDirectoryService,
     });
     const service = new TestResultServiceImpl({
+      staticDirectory: tempDirectoryService,
       timestamp: timestampService,
       testStep: new TestStepServiceImpl({
         imageFileRepository: imageFileRepositoryService,

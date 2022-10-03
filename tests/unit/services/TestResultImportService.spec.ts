@@ -104,7 +104,12 @@ describe("TestResultImportService", () => {
           windowInfo: {
             windowHandle: "windowHandle",
           },
-          pageInfo: { title: "title", url: "url", keywordTexts: [] },
+          pageInfo: {
+            title: "title",
+            url: "url",
+            keywordTexts: [],
+            screenElements: [],
+          },
           operation: {
             input: "input",
             type: "type",
@@ -119,6 +124,7 @@ describe("TestResultImportService", () => {
         version: 1,
         name: "testResultName",
         sessionId: "testResultId",
+        source: "",
         startTimeStamp: 0,
         endTimeStamp: 0,
         initialUrl: "initialUrl",
@@ -162,6 +168,9 @@ describe("TestResultImportService", () => {
       );
       expect(testStepEntity.keywordTexts).toEqual(
         JSON.stringify(historyItem1.testStep.pageInfo.keywordTexts)
+      );
+      expect(testStepEntity.screenElements).toEqual(
+        JSON.stringify(historyItem1.testStep.pageInfo.screenElements)
       );
       expect(testStepEntity.operationElement).toEqual(
         JSON.stringify(historyItem1.testStep.operation.elementInfo)
@@ -233,6 +242,7 @@ describe("TestResultImportService", () => {
         testResultExportData.initialUrl
       );
       expect(testResultEntity.name).toEqual(testResultExportData.name);
+      expect(testResultEntity.source).toEqual(testResultExportData.source);
       expect(testResultEntity.startTimestamp).toEqual(
         testResultExportData.startTimeStamp
       );

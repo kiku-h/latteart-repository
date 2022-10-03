@@ -62,10 +62,12 @@ import { UpdateAttachedFilesEntity1642388104855 } from "./migrations/16423881048
 import { UpdateViewPointEntity1654749340817 } from "./migrations/1654749340817-UpdateViewPointEntity";
 import { UpdateViewPointEntity1655772848395 } from "./migrations/1655772848395-UpdateViewPointEntity";
 import { UpdateSessionEntity1656305325919 } from "./migrations/1656305325919-UpdateSessionEntity";
+import { UpdateTestResultEntity1657003075570 } from "./migrations/1657003075570-UpdateTestResultEntity";
 import { TestProgressEntity } from "./entities/TestProgressEntity";
 import { AddTestProgressEntity1657768635961 } from "./migrations/1657768635961-AddTestProgressEntity";
 import { DeleteDefaultInputElementEntity1661223982605 } from "./migrations/1661223982605-DeleteDefaultInputElementEntity";
 import { UpdateTestStepsEntity1664929915802 } from "./migrations/1664929915802-UpdateTestStepsEntity";
+import { UpdateTestStepEntity1661479210527 } from "./migrations/1661479210527-UpdateTestStepEntity";
 
 LoggingService.initialize(
   new StandardLogger(
@@ -98,7 +100,6 @@ export const exportDirectoryService = new StaticDirectoryServiceImpl(
   publicDirPath,
   "exports"
 );
-
 export const tempDirectoryService = new StaticDirectoryServiceImpl(
   publicDirPath,
   "temp"
@@ -157,9 +158,11 @@ async function initializeOrmConnection(connectionName: string) {
       UpdateViewPointEntity1654749340817,
       UpdateViewPointEntity1655772848395,
       UpdateSessionEntity1656305325919,
+      UpdateTestResultEntity1657003075570,
       AddTestProgressEntity1657768635961,
       DeleteDefaultInputElementEntity1661223982605,
       UpdateTestStepsEntity1664929915802,
+      UpdateTestStepEntity1661479210527,
     ],
   };
 
@@ -181,6 +184,8 @@ async function initializeOrmConnection(connectionName: string) {
 
   const connection = await createConnection(options);
 
+  await connection.query("PRAGMA foreign_keys=OFF;");
+
   await connection.runMigrations().catch(async (error) => {
     LoggingService.error(error);
 
@@ -188,6 +193,8 @@ async function initializeOrmConnection(connectionName: string) {
 
     throw new Error(`Migration failed.`);
   });
+
+  await connection.query("PRAGMA foreign_keys=ON;");
 }
 
 function runServer(port: number, timeout?: number) {

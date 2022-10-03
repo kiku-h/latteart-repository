@@ -23,6 +23,7 @@ import { Body, Controller, Path, Post, Route } from "tsoa";
 import {
   exportDirectoryService,
   screenshotDirectoryService,
+  tempDirectoryService,
   transactionRunner,
 } from "..";
 import { ExportServiceImpl } from "@/services/ExportService";
@@ -54,6 +55,7 @@ export class ProjectExportController extends Controller {
         timestamp: timestampService,
       });
       const testResultService = new TestResultServiceImpl({
+        staticDirectory: tempDirectoryService,
         timestamp: timestampService,
         testStep: new TestStepServiceImpl({
           imageFileRepository: screenshotFileRepositoryService,

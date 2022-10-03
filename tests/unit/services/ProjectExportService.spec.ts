@@ -49,7 +49,8 @@ describe("ProjectExportService", () => {
 
     const testResultService: TestResultService = {
       getTestResultIdentifiers: jest.fn(),
-      getTestResult: jest.fn().mockResolvedValue({
+      getTestResult: jest.fn(),
+      getTestResultForDB: jest.fn().mockResolvedValue({
         id: "testResultId",
       }),
       createTestResult: jest.fn(),
@@ -62,6 +63,7 @@ describe("ProjectExportService", () => {
           fileUrl: "fileUrl",
         },
       ]),
+      compareTestResults: jest.fn(),
     };
 
     const exportFileRepositoryService: ExportFileRepositoryService = {

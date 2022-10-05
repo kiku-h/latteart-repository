@@ -178,6 +178,9 @@ export class TestStepServiceImpl implements TestStepService {
           ownedText: element.ownedText,
         };
       });
+    const numberToString = (s: number | undefined) => {
+      return s === undefined ? "" : String(s);
+    };
 
     // add test step.
     const newTestStepEntity = await getRepository(TestStepEntity).save({
@@ -192,6 +195,10 @@ export class TestStepServiceImpl implements TestStepService {
       screenElements: JSON.stringify(screenTagAndText),
       timestamp: requestBody.timestamp,
       testResult: savedTestResultEntity,
+      scrollPositionX: numberToString(requestBody.scrollPosition?.x),
+      scrollPositionY: numberToString(requestBody.scrollPosition?.y),
+      clientSizeWidth: numberToString(requestBody.clientSize?.width),
+      clientSizeHeight: numberToString(requestBody.clientSize?.height),
     });
     const screenshot = new ScreenshotEntity({
       fileUrl: await this.service.imageFileRepository.writeBase64ToFile(
@@ -386,6 +393,20 @@ export class TestStepServiceImpl implements TestStepService {
       inputElements: JSON.parse(testStepEntity.inputElements),
       windowHandle: testStepEntity.windowHandle,
       keywordTexts: JSON.parse(testStepEntity.keywordTexts),
+      scrollPosition:
+        testStepEntity.scrollPositionX === ""
+          ? undefined
+          : {
+              x: Number(testStepEntity.scrollPositionX),
+              y: Number(testStepEntity.scrollPositionY),
+            },
+      clientSize:
+        testStepEntity.clientSizeWidth === ""
+          ? undefined
+          : {
+              width: Number(testStepEntity.clientSizeWidth),
+              height: Number(testStepEntity.clientSizeHeight),
+            },
     };
   }
 
@@ -404,6 +425,20 @@ export class TestStepServiceImpl implements TestStepService {
       windowHandle: testStepEntity.windowHandle,
       keywordTexts: JSON.parse(testStepEntity.keywordTexts),
       screenElements: JSON.parse(testStepEntity.screenElements),
+      scrollPosition:
+        testStepEntity.scrollPositionX === ""
+          ? undefined
+          : {
+              x: Number(testStepEntity.scrollPositionX),
+              y: Number(testStepEntity.scrollPositionY),
+            },
+      clientSize:
+        testStepEntity.clientSizeWidth === ""
+          ? undefined
+          : {
+              width: Number(testStepEntity.clientSizeWidth),
+              height: Number(testStepEntity.clientSizeHeight),
+            },
     };
   }
 

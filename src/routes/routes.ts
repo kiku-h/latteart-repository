@@ -446,6 +446,7 @@ const models: TsoaRoute.Models = {
             "value": {"dataType":"any"},
             "checked": {"dataType":"boolean"},
             "attributes": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"},"required":true},
+            "boundingRect": {"dataType":"nestedObjectLiteral","nestedProperties":{"height":{"dataType":"double","required":true},"width":{"dataType":"double","required":true},"left":{"dataType":"double","required":true},"top":{"dataType":"double","required":true}}},
         },
         "additionalProperties": false,
     },
@@ -464,6 +465,8 @@ const models: TsoaRoute.Models = {
             "windowHandle": {"dataType":"string","required":true},
             "keywordTexts": {"dataType":"array","array":{"dataType":"string"}},
             "screenElements": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"ownedText":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"tagname":{"dataType":"string","required":true}}}},
+            "scrollPosition": {"dataType":"nestedObjectLiteral","nestedProperties":{"y":{"dataType":"double","required":true},"x":{"dataType":"double","required":true}}},
+            "clientSize": {"dataType":"nestedObjectLiteral","nestedProperties":{"height":{"dataType":"double","required":true},"width":{"dataType":"double","required":true}}},
         },
         "additionalProperties": false,
     },
@@ -503,6 +506,8 @@ const models: TsoaRoute.Models = {
             "keywordTexts": {"dataType":"array","array":{"dataType":"string"}},
             "timestamp": {"dataType":"double","required":true},
             "pageSource": {"dataType":"string","required":true},
+            "scrollPosition": {"dataType":"nestedObjectLiteral","nestedProperties":{"y":{"dataType":"double","required":true},"x":{"dataType":"double","required":true}}},
+            "clientSize": {"dataType":"nestedObjectLiteral","nestedProperties":{"height":{"dataType":"double","required":true},"width":{"dataType":"double","required":true}}},
         },
         "additionalProperties": false,
     },
@@ -514,7 +519,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_Operation.Exclude_keyofOperation.screenElements__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"input":{"dataType":"string","required":true},"type":{"dataType":"string","required":true},"elementInfo":{"dataType":"union","subSchemas":[{"ref":"ElementInfo"},{"dataType":"enum","enums":[null]}],"required":true},"title":{"dataType":"string","required":true},"url":{"dataType":"string","required":true},"imageFileUrl":{"dataType":"string","required":true},"timestamp":{"dataType":"string","required":true},"inputElements":{"dataType":"array","array":{"dataType":"refObject","ref":"ElementInfo"},"required":true},"windowHandle":{"dataType":"string","required":true},"keywordTexts":{"dataType":"array","array":{"dataType":"string"}}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"input":{"dataType":"string","required":true},"type":{"dataType":"string","required":true},"elementInfo":{"dataType":"union","subSchemas":[{"ref":"ElementInfo"},{"dataType":"enum","enums":[null]}],"required":true},"title":{"dataType":"string","required":true},"url":{"dataType":"string","required":true},"imageFileUrl":{"dataType":"string","required":true},"timestamp":{"dataType":"string","required":true},"inputElements":{"dataType":"array","array":{"dataType":"refObject","ref":"ElementInfo"},"required":true},"windowHandle":{"dataType":"string","required":true},"keywordTexts":{"dataType":"array","array":{"dataType":"string"}},"scrollPosition":{"dataType":"nestedObjectLiteral","nestedProperties":{"y":{"dataType":"double","required":true},"x":{"dataType":"double","required":true}}},"clientSize":{"dataType":"nestedObjectLiteral","nestedProperties":{"height":{"dataType":"double","required":true},"width":{"dataType":"double","required":true}}}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_Operation.screenElements_": {

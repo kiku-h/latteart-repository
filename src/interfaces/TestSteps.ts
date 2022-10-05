@@ -43,6 +43,12 @@ export interface ElementInfo {
   value?: any;
   checked?: boolean;
   attributes: { [key: string]: any };
+  boundingRect?: {
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  };
 }
 
 interface CapturedOperation {
@@ -58,6 +64,8 @@ interface CapturedOperation {
   keywordTexts?: string[];
   timestamp: number;
   pageSource: string;
+  scrollPosition?: { x: number; y: number };
+  clientSize?: { width: number; height: number };
 }
 
 export type CapturedElementInfo = ElementInfo & { ownedText: string };
@@ -74,6 +82,8 @@ export interface Operation {
   windowHandle: string;
   keywordTexts?: string[];
   screenElements?: { tagname: string; ownedText?: string | null }[];
+  scrollPosition?: { x: number; y: number };
+  clientSize?: { width: number; height: number };
 }
 
 export interface TestStep {

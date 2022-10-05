@@ -534,10 +534,7 @@ const models: TsoaRoute.Models = {
             "keywordTexts": {"dataType":"array","array":{"dataType":"string"}},
             "scrollPosition": {"dataType":"nestedObjectLiteral","nestedProperties":{"y":{"dataType":"double","required":true},"x":{"dataType":"double","required":true}}},
             "clientSize": {"dataType":"nestedObjectLiteral","nestedProperties":{"height":{"dataType":"double","required":true},"width":{"dataType":"double","required":true}}},
-<<<<<<< HEAD
             "screenElements": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"ownedText":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"tagname":{"dataType":"string","required":true}}}},
-=======
->>>>>>> 3f705c5... get scrollPosition, clientSize and boundingRect.
         },
         "additionalProperties": false,
     },

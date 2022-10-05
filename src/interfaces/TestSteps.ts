@@ -59,7 +59,7 @@ interface CapturedOperation {
   timestamp: number;
   pageSource: string;
   scrollPosition?: { x: number; y: number };
-  windowInnerSize?: { width: number; height: number };
+  clientSize?: { width: number; height: number };
 }
 
 interface Operation {
@@ -73,8 +73,8 @@ interface Operation {
   inputElements: ElementInfo[];
   windowHandle: string;
   keywordTexts?: string[];
-  scrollPosition: { x: number; y: number } | null;
-  windowInnerSize: { width: number; height: number } | null;
+  scrollPosition?: { x: number; y: number };
+  clientSize?: { width: number; height: number };
 }
 
 interface TestStep {

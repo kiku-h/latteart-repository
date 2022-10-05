@@ -238,11 +238,9 @@ export class TestResultServiceImpl implements TestResultService {
       testResultEntity.startTimestamp = params.startTime;
     }
 
-    console.log(1);
     const updatedTestResultEntity = await getRepository(TestResultEntity).save(
       testResultEntity
     );
-    console.log(2);
 
     return this.convertTestResultEntityToTestResult({
       coverageSources,

@@ -148,10 +148,8 @@ export class TestStepServiceImpl implements TestStepService {
       testResult: savedTestResultEntity,
       scrollPositionX: numberToString(requestBody.scrollPosition?.x),
       scrollPositionY: numberToString(requestBody.scrollPosition?.y),
-      windowInnerSizeWidth: numberToString(requestBody.windowInnerSize?.width),
-      windowInnerSizeHeight: numberToString(
-        requestBody.windowInnerSize?.height
-      ),
+      clientSizeWidth: numberToString(requestBody.clientSize?.width),
+      clientSizeHeight: numberToString(requestBody.clientSize?.height),
     });
     const screenshot = new ScreenshotEntity({
       fileUrl: await this.service.imageFileRepository.writeBase64ToFile(
@@ -287,17 +285,17 @@ export class TestStepServiceImpl implements TestStepService {
       keywordTexts: JSON.parse(testStepEntity.keywordTexts),
       scrollPosition:
         testStepEntity.scrollPositionX === ""
-          ? null
+          ? undefined
           : {
               x: Number(testStepEntity.scrollPositionX),
               y: Number(testStepEntity.scrollPositionY),
             },
-      windowInnerSize:
-        testStepEntity.windowInnerSizeWidth === ""
-          ? null
+      clientSize:
+        testStepEntity.clientSizeWidth === ""
+          ? undefined
           : {
-              width: Number(testStepEntity.windowInnerSizeWidth),
-              height: Number(testStepEntity.windowInnerSizeHeight),
+              width: Number(testStepEntity.clientSizeWidth),
+              height: Number(testStepEntity.clientSizeHeight),
             },
     };
   }

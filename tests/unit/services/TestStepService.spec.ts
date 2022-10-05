@@ -80,7 +80,7 @@ describe("TestStepService", () => {
         timestamp: 0,
         pageSource: "pageSource",
         scrollPosition: { x: 1, y: 2 },
-        windowInnerSize: { width: 100, height: 200 },
+        clientSize: { width: 100, height: 200 },
       };
 
       const operationData = {
@@ -98,7 +98,7 @@ describe("TestStepService", () => {
           x: 1,
           y: 2,
         },
-        windowInnerSize: { width: 100, height: 200 },
+        clientSize: { width: 100, height: 200 },
       };
 
       const result = await service.createTestStep(
@@ -165,8 +165,8 @@ describe("TestStepService", () => {
         inputElements: JSON.parse(testStepEntity.inputElements),
         windowHandle: testStepEntity.windowHandle,
         keywordTexts: JSON.parse(testStepEntity.keywordTexts),
-        scrollPosition: null,
-        windowInnerSize: null,
+        scrollPosition: undefined,
+        clientSize: undefined,
       };
 
       const result = await service.getTestStep(testStepEntity.id);

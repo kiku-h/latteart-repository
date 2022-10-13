@@ -65,7 +65,7 @@ interface CapturedOperation {
   timestamp: number;
   pageSource: string;
   scrollPosition?: { x: number; y: number };
-  clientSize?: { width: number; height: number };
+  clientSize?: { width: number; height: number; x: number; y: number };
 }
 
 export type CapturedElementInfo = ElementInfo & { ownedText: string };

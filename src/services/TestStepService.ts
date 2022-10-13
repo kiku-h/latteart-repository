@@ -38,6 +38,10 @@ import {
   OperationDiffChecker,
 } from "@/lib/OperationDiffChecker";
 import LoggingService from "@/logger/LoggingService";
+import { compareImage } from "@/lib/compareImage";
+import path from "path";
+import { StaticDirectoryService } from "./StaticDirectoryService";
+import { publicDirPath } from "@/common";
 
 export interface TestStepService {
   getTestStep(testStepId: string): Promise<GetTestStepResponse>;
@@ -91,6 +95,7 @@ export interface TestStepService {
   compareTestSteps(
     testStepId1: string,
     testStepId2: string,
+    outputImageDiffPath: string,
     option?: Partial<{
       excludeParamNames: string[];
       excludeTagsNames: string[];
@@ -104,6 +109,7 @@ export class TestStepServiceImpl implements TestStepService {
   constructor(
     private service: {
       imageFileRepository: ImageFileRepositoryService;
+      screenshotDirectory?: StaticDirectoryService;
       timestamp: TimestampService;
       config: ConfigsService;
     }
@@ -346,6 +352,7 @@ export class TestStepServiceImpl implements TestStepService {
   public async compareTestSteps(
     testStepId1: string,
     testStepId2: string,
+    outputImageDiffPath: string,
     option: Partial<{
       excludeParamNames: string[];
       excludeTagsNames: string[];
@@ -365,6 +372,29 @@ export class TestStepServiceImpl implements TestStepService {
         return undefined;
       }
     );
+
+    if (
+      testStep1?.operation.imageFileUrl &&
+      testStep1.operation.imageFileUrl.endsWith(".png") &&
+      testStep2?.operation.imageFileUrl &&
+      testStep2.operation.imageFileUrl.endsWith(".png")
+    ) {
+      const fileName = `${
+        path.basename(testStep1?.operation.imageFileUrl).split(".")[0]
+      }_${path.basename(testStep2?.operation.imageFileUrl).split(".")[0]}.png`;
+
+      if (!this.service.screenshotDirectory) {
+        throw new Error("screenshotDirectoryService is undefined.");
+      }
+      LoggingService.info(
+        `compare image":  ${testStep1?.operation.imageFileUrl} - ${testStep2?.operation.imageFileUrl}`
+      );
+      await compareImage(
+        path.join(publicDirPath, testStep1?.operation.imageFileUrl),
+        path.join(publicDirPath, testStep2?.operation.imageFileUrl),
+        path.join(outputImageDiffPath, fileName)
+      );
+    }
 
     const paramNameToOptions: [
       paramName: keyof Operation,

@@ -59,6 +59,7 @@ export class TestResultDiffController extends Controller {
         timestamp: timestampService,
         testStep: new TestStepServiceImpl({
           imageFileRepository: imageFileRepositoryService,
+          screenshotDirectory: screenshotDirectoryService,
           timestamp: timestampService,
           config: new ConfigsService(),
         }),

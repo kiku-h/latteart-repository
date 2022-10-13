@@ -381,6 +381,15 @@ export class TestResultServiceImpl implements TestResultService {
     isSame: boolean;
     url: string;
   }> {
+    const timestamp = this.service.timestamp.format("YYYYMMDD_HHmmss");
+
+    const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "latteart-"));
+
+    const outputDirectoryPath = path.join(tmpDirPath, `compare_${timestamp}`);
+    const outputImageDiffPath = path.join(outputDirectoryPath, "image");
+
+    await fs.mkdirp(outputImageDiffPath);
+
     const testStepIds1 = await this.collectAllTestStepIds(testResultId1);
     const testStepIds2 = await this.collectAllTestStepIds(testResultId2);
 
@@ -399,19 +408,14 @@ export class TestResultServiceImpl implements TestResultService {
           return this.service.testStep.compareTestSteps(
             testStepId1,
             testStepId2,
+            outputImageDiffPath,
             option
           );
         })
     );
 
     const isDifferent = diffs.some((diff) => JSON.stringify(diff) !== "{}");
-    const timestamp = this.service.timestamp.format("YYYYMMDD_HHmmss");
-
-    const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "latteart-"));
-
-    const outputDirectoryPath = path.join(tmpDirPath, `compare_${timestamp}`);
     const outputPath = path.join(outputDirectoryPath, `diffs.json`);
-
     await fs.outputFile(outputPath, JSON.stringify(diffs));
 
     const zipFilePath = await new FileArchiver(outputDirectoryPath, {

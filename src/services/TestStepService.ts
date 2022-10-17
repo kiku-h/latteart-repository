@@ -38,7 +38,7 @@ import {
   OperationDiffChecker,
 } from "@/lib/OperationDiffChecker";
 import LoggingService from "@/logger/LoggingService";
-import { compareImage } from "@/lib/compareImage";
+import CompareImage from "@/lib/compareImage";
 import path from "path";
 import { StaticDirectoryService } from "./StaticDirectoryService";
 import { publicDirPath } from "@/common";
@@ -373,6 +373,20 @@ export class TestStepServiceImpl implements TestStepService {
       }
     );
 
+    const paramNameToOptions: [
+      paramName: keyof Operation,
+      options: { name?: string; func?: DiffCheckFunction }
+    ][] =
+      option.excludeParamNames?.map((paramName) => {
+        return [paramName as keyof Operation, { func: () => undefined }];
+      }) ?? [];
+
+    const diff = await new OperationDiffChecker(...paramNameToOptions).diff(
+      testStep1?.operation,
+      testStep2?.operation,
+      option.excludeTagsNames
+    );
+
     if (
       testStep1?.operation.imageFileUrl &&
       testStep1.operation.imageFileUrl.endsWith(".png") &&
@@ -389,26 +403,23 @@ export class TestStepServiceImpl implements TestStepService {
       LoggingService.info(
         `compare image":  ${testStep1?.operation.imageFileUrl} - ${testStep2?.operation.imageFileUrl}`
       );
-      await compareImage(
+
+      const compareImage = await new CompareImage().init(
         path.join(publicDirPath, testStep1?.operation.imageFileUrl),
-        path.join(publicDirPath, testStep2?.operation.imageFileUrl),
-        path.join(outputImageDiffPath, fileName)
+        path.join(publicDirPath, testStep2?.operation.imageFileUrl)
       );
+      if (compareImage.hasDifference()) {
+        compareImage.extractDifference(
+          path.join(outputImageDiffPath, fileName)
+        );
+        diff["image"] = {
+          a: testStep1?.operation.imageFileUrl,
+          b: testStep2?.operation.imageFileUrl,
+        };
+      }
     }
 
-    const paramNameToOptions: [
-      paramName: keyof Operation,
-      options: { name?: string; func?: DiffCheckFunction }
-    ][] =
-      option.excludeParamNames?.map((paramName) => {
-        return [paramName as keyof Operation, { func: () => undefined }];
-      }) ?? [];
-
-    return new OperationDiffChecker(...paramNameToOptions).diff(
-      testStep1?.operation,
-      testStep2?.operation,
-      option.excludeTagsNames
-    );
+    return diff;
   }
 
   private async getOperationFromTestStepEntity(testStepEntity: TestStepEntity) {

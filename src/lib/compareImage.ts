@@ -16,18 +16,66 @@
 import fs from "fs";
 import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
+import LoggingService from "@/logger/LoggingService";
 
-export async function compareImage(
-  path1: string,
-  path2: string,
-  outputPath: string
-): Promise<void> {
-  const image1 = PNG.sync.read(fs.readFileSync(path1));
-  const image2 = PNG.sync.read(fs.readFileSync(path2));
-  const { width, height } = image1;
-  const diff = new PNG({ width, height });
-  Pixelmatch(image1.data, image2.data, diff.data, width, height, {
-    threshold: 0,
-  });
-  fs.writeFileSync(outputPath, PNG.sync.write(diff));
+export default class CompareImage {
+  private base?: Buffer;
+  private target?: Buffer;
+
+  public async init(
+    baseFilePath: string,
+    targetFilePath: string
+  ): Promise<CompareImage> {
+    return new Promise((resolve, reject) => {
+      fs.readFile(baseFilePath, (err1, file1) => {
+        if (err1) {
+          LoggingService.error("invalid baseFilePath.", err1);
+          return reject(err1);
+        }
+        this.base = file1;
+
+        fs.readFile(targetFilePath, (err2, file2) => {
+          if (err2) {
+            LoggingService.error("invalid baseFilePath.", err2);
+            return reject(err2);
+          }
+          this.target = file2;
+          return resolve(this);
+        });
+      });
+    });
+  }
+
+  public hasDifference(): boolean {
+    if (!this.base || !this.target) {
+      throw new Error("invalid file settings.");
+    }
+    return this.base.equals(this.target);
+  }
+
+  public extractDifference(outputPath: string): Promise<void> {
+    if (!this.base || !this.target) {
+      throw new Error("invalid file settings.");
+    }
+    const base = PNG.sync.read(this.base);
+    const target = PNG.sync.read(this.target);
+
+    const { width, height } = base;
+    const diff = new PNG({ width, height });
+    try {
+      Pixelmatch(base.data, target.data, diff.data, width, height, {
+        threshold: 0,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    return new Promise((resolve, reject) => {
+      fs.writeFile(outputPath, PNG.sync.write(diff), (err) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve();
+      });
+    });
+  }
 }

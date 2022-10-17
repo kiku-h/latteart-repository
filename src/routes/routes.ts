@@ -1396,8 +1396,6 @@ const models: TsoaRoute.Models = {
       clientSize: {
         dataType: "nestedObjectLiteral",
         nestedProperties: {
-          y: { dataType: "double", required: true },
-          x: { dataType: "double", required: true },
           height: { dataType: "double", required: true },
           width: { dataType: "double", required: true },
         },

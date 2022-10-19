@@ -417,12 +417,12 @@ export class TestResultServiceImpl implements TestResultService {
 
     const isDifferent = diffs.some((diff) => {
       return Object.entries(diff).some(([key, value]) => {
-        return key !== "image" ? true : value.a === "skip" ? false : true;
+        return key !== "screenshots" ? true : value.a === "skip" ? false : true;
       });
     });
     const hasSkipImageCompare = diffs.some((diff) => {
-      return diff["image"]
-        ? diff["image"].a === "skip" && diff["image"].b === "skip"
+      return diff["screenshots"]
+        ? diff["screenshots"].a === "skip" && diff["screenshots"].b === "skip"
         : false;
     });
     const outputPath = path.join(outputDirectoryPath, `diffs.json`);

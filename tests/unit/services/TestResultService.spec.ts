@@ -317,7 +317,7 @@ describe("TestResultService", () => {
               },
             },
           ],
-          hasSkipImageCompare: false,
+          hasInvalidScreenshots: false,
           isSame: false,
           url: expectedUrl,
         });
@@ -368,7 +368,7 @@ describe("TestResultService", () => {
                 },
               },
             ],
-            hasSkipImageCompare: false,
+            hasInvalidScreenshots: false,
             isSame: false,
             url: expectedUrl,
           });
@@ -418,7 +418,7 @@ describe("TestResultService", () => {
                 },
               },
             ],
-            hasSkipImageCompare: false,
+            hasInvalidScreenshots: false,
             isSame: false,
             url: expectedUrl,
           });
@@ -432,7 +432,7 @@ describe("TestResultService", () => {
 
           expect(result).toEqual({
             diffs: [],
-            hasSkipImageCompare: false,
+            hasInvalidScreenshots: false,
             isSame: true,
             url: expectedUrl,
           });
@@ -528,7 +528,7 @@ describe("TestResultService", () => {
                 },
               },
             ],
-            hasSkipImageCompare: false,
+            hasInvalidScreenshots: false,
             isSame: false,
             url: expectedUrl,
           });

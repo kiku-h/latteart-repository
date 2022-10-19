@@ -379,7 +379,7 @@ export class TestResultServiceImpl implements TestResultService {
       };
     }[];
     isSame: boolean;
-    hasSkipImageCompare: boolean;
+    hasInvalidScreenshots: boolean;
     url: string;
   }> {
     const timestamp = this.service.timestamp.format("YYYYMMDD_HHmmss");
@@ -420,7 +420,7 @@ export class TestResultServiceImpl implements TestResultService {
         return key !== "screenshots" ? true : value.a === "skip" ? false : true;
       });
     });
-    const hasSkipImageCompare = diffs.some((diff) => {
+    const hasInvalidScreenshots = diffs.some((diff) => {
       return diff["screenshots"]
         ? diff["screenshots"].a === "skip" && diff["screenshots"].b === "skip"
         : false;
@@ -438,7 +438,7 @@ export class TestResultServiceImpl implements TestResultService {
 
     const data = {
       diffs,
-      hasSkipImageCompare,
+      hasInvalidScreenshots,
       isSame: !isDifferent,
       url: this.service.staticDirectory.getFileUrl(zipFileName),
     };

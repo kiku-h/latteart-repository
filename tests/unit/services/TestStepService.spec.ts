@@ -327,7 +327,7 @@ describe("TestStepService", () => {
             a: "null",
             b: undefined,
           },
-          image: {
+          screenshot: {
             a: "skip",
             b: undefined,
           },

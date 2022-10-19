@@ -388,6 +388,7 @@ export class TestStepServiceImpl implements TestStepService {
     );
 
     if (
+      !(option.excludeParamNames ?? []).includes("screenshots") &&
       testStep1?.operation.imageFileUrl &&
       testStep1.operation.imageFileUrl.endsWith(".png") &&
       testStep2?.operation.imageFileUrl &&
@@ -412,13 +413,16 @@ export class TestStepServiceImpl implements TestStepService {
         pngImageComparison.extractDifference(
           path.join(outputImageDiffPath, fileName)
         );
-        diff["image"] = {
+        diff["screenshot"] = {
           a: testStep1?.operation.imageFileUrl,
           b: testStep2?.operation.imageFileUrl,
         };
       }
-    } else if (testStep1 || testStep2) {
-      diff["image"] = {
+    } else if (
+      !(option.excludeParamNames ?? []).includes("screenshots") &&
+      (testStep1 || testStep2)
+    ) {
+      diff["screenshot"] = {
         a: testStep1 ? "skip" : undefined,
         b: testStep2 ? "skip" : undefined,
       };

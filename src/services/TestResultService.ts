@@ -387,7 +387,7 @@ export class TestResultServiceImpl implements TestResultService {
     const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "latteart-"));
 
     const outputDirectoryPath = path.join(tmpDirPath, `compare_${timestamp}`);
-    const outputImageDiffPath = path.join(outputDirectoryPath, "image");
+    const outputImageDiffPath = path.join(outputDirectoryPath, "screenshots");
 
     await fs.mkdirp(outputImageDiffPath);
 

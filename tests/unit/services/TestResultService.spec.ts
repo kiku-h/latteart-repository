@@ -267,7 +267,7 @@ describe("TestResultService", () => {
         expect(result).toEqual({
           diffs: [
             {
-              image: {
+              screenshot: {
                 a: "screenshots/testStep.png",
                 b: "screenshots/testStep.png",
               },
@@ -281,7 +281,7 @@ describe("TestResultService", () => {
                 a: "",
                 b: "aaa",
               },
-              image: {
+              screenshot: {
                 a: "screenshots/testStep.png",
                 b: "screenshots/testStep.png",
               },
@@ -311,7 +311,7 @@ describe("TestResultService", () => {
                 a: undefined,
                 b: "[]",
               },
-              image: {
+              screenshot: {
                 a: undefined,
                 b: "skip",
               },
@@ -350,7 +350,7 @@ describe("TestResultService", () => {
                   a: undefined,
                   b: "null",
                 },
-                image: {
+                screenshot: {
                   a: undefined,
                   b: "skip",
                 },
@@ -400,7 +400,7 @@ describe("TestResultService", () => {
                   a: "null",
                   b: undefined,
                 },
-                image: {
+                screenshot: {
                   a: "skip",
                   b: undefined,
                 },
@@ -522,7 +522,7 @@ describe("TestResultService", () => {
                   a: undefined,
                   b: "[]",
                 },
-                image: {
+                screenshot: {
                   a: undefined,
                   b: "skip",
                 },

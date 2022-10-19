@@ -11,6 +11,7 @@ import { getRepository } from "typeorm";
 import { SqliteTestConnectionHelper } from "../../helper/TestConnectionHelper";
 import { CreateTestStepDto } from "@/interfaces/TestSteps";
 import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
+import PNGImageComparison from "@/lib/PNGImageComparison";
 
 const testConnectionHelper = new SqliteTestConnectionHelper();
 
@@ -21,6 +22,9 @@ beforeEach(async () => {
 afterEach(async () => {
   await testConnectionHelper.closeTestConnection();
 });
+
+jest.mock("../../../src/lib/PNGImageComparison");
+const pngImageComparison = PNGImageComparison as jest.Mock;
 
 describe("TestStepService", () => {
   describe("#createTestStep", () => {
@@ -200,6 +204,17 @@ describe("TestStepService", () => {
         imageFileRepository: imageFileRepositoryService,
         timestamp: timestampService,
         config: new ConfigsService(),
+        screenshotDirectory: {
+          mkdir: jest.fn(),
+          outputFile: jest.fn(),
+          removeFile: jest.fn(),
+          copyFile: jest.fn(),
+          getFileUrl: jest.fn(),
+          getJoinedPath: jest.fn(),
+          moveFile: jest.fn(),
+          collectFileNames: jest.fn(),
+          collectFilePaths: jest.fn(),
+        },
       });
     });
 
@@ -226,9 +241,27 @@ describe("TestStepService", () => {
           new TestResultEntity()
         );
         testResultId = testResultEntity.id;
+        pngImageComparison.mockClear();
       });
 
       it("テストステップ内の操作の各パラメータを比較する", async () => {
+        pngImageComparison.mockImplementation(() => {
+          return {
+            init: jest
+              .fn()
+              .mockResolvedValueOnce({
+                init: jest.fn().mockResolvedValue(0),
+                hasDifference: jest.fn().mockReturnValueOnce(false),
+                extractDifference: jest.fn().mockResolvedValue(0),
+              })
+              .mockResolvedValueOnce({
+                init: jest.fn().mockResolvedValue(0),
+                hasDifference: jest.fn().mockReturnValueOnce(false),
+                extractDifference: jest.fn().mockResolvedValue(0),
+              }),
+          };
+        });
+
         const requestBody1: CreateTestStepDto = {
           ...baseRequestBody,
           title: "title1",
@@ -248,7 +281,11 @@ describe("TestStepService", () => {
         );
 
         expect(
-          await testStepService.compareTestSteps(testStep1.id, testStep2.id)
+          await testStepService.compareTestSteps(
+            testStep1.id,
+            testStep2.id,
+            "outputImageDiffPath"
+          )
         ).toEqual({
           title: {
             a: "title1",
@@ -257,7 +294,11 @@ describe("TestStepService", () => {
         });
 
         expect(
-          await testStepService.compareTestSteps(testStep1.id, testStep1.id)
+          await testStepService.compareTestSteps(
+            testStep1.id,
+            testStep1.id,
+            "outputImageDiffPath"
+          )
         ).toEqual({});
       });
 
@@ -268,7 +309,11 @@ describe("TestStepService", () => {
         );
 
         expect(
-          await testStepService.compareTestSteps(testStep.id, "unknownId")
+          await testStepService.compareTestSteps(
+            testStep.id,
+            "unknownId",
+            "outputImageDiffPath"
+          )
         ).toEqual({
           input: {
             a: "",
@@ -280,6 +325,10 @@ describe("TestStepService", () => {
           },
           elementInfo: {
             a: "null",
+            b: undefined,
+          },
+          screenshot: {
+            a: "skip",
             b: undefined,
           },
           title: {
@@ -297,7 +346,11 @@ describe("TestStepService", () => {
         });
 
         expect(
-          await testStepService.compareTestSteps("unknownId", "unknownId")
+          await testStepService.compareTestSteps(
+            "unknownId",
+            "unknownId",
+            "outputImageDiffPath"
+          )
         ).toEqual({});
       });
 
@@ -326,6 +379,7 @@ describe("TestStepService", () => {
           await testStepService.compareTestSteps(
             testStep1.id,
             testStep2.id,
+            "outputImageDiffPath",
             option
           )
         ).toEqual({});

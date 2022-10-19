@@ -2,6 +2,8 @@ import { TestResultEntity } from "@/entities/TestResultEntity";
 import { TestStepEntity } from "@/entities/TestStepEntity";
 import { CreateTestResultDto } from "@/interfaces/TestResults";
 import { CreateTestStepDto } from "@/interfaces/TestSteps";
+import PNGImageComparison from "@/lib/PNGImageComparison";
+
 import { ConfigsService } from "@/services/ConfigsService";
 import { ImageFileRepositoryService } from "@/services/ImageFileRepositoryService";
 import {
@@ -25,6 +27,9 @@ beforeEach(async () => {
 afterEach(async () => {
   await testConnectionHelper.closeTestConnection();
 });
+
+jest.mock("../../../src/lib/PNGImageComparison");
+const pngImageComparison = PNGImageComparison as jest.Mock;
 
 describe("TestResultService", () => {
   describe("#collectAllTestStepIds", () => {
@@ -148,7 +153,9 @@ describe("TestResultService", () => {
     beforeEach(() => {
       const imageFileRepositoryService: ImageFileRepositoryService = {
         writeBufferToFile: jest.fn(),
-        writeBase64ToFile: jest.fn().mockResolvedValue("testStep.png"),
+        writeBase64ToFile: jest
+          .fn()
+          .mockResolvedValue("screenshots/testStep.png"),
         removeFile: jest.fn(),
         getFilePath: jest.fn(),
         getFileUrl: jest.fn(),
@@ -161,6 +168,17 @@ describe("TestResultService", () => {
       };
 
       testStepService = new TestStepServiceImpl({
+        screenshotDirectory: {
+          mkdir: jest.fn(),
+          outputFile: jest.fn(),
+          removeFile: jest.fn(),
+          copyFile: jest.fn(),
+          getFileUrl: jest.fn(),
+          getJoinedPath: jest.fn(),
+          moveFile: jest.fn(),
+          collectFileNames: jest.fn(),
+          collectFilePaths: jest.fn(),
+        },
         imageFileRepository: imageFileRepositoryService,
         timestamp: timestampService,
         config: new ConfigsService(),
@@ -197,9 +215,22 @@ describe("TestResultService", () => {
           new TestResultEntity()
         );
         testResultId2 = testResultEntity2.id;
+        pngImageComparison.mockClear();
       });
 
       it("指定されたIDのテスト結果が2つともある場合は、各テスト結果内の全ての操作を順番に比較する", async () => {
+        pngImageComparison.mockImplementation(() => {
+          return {
+            init: jest.fn().mockResolvedValue({
+              init: jest.fn().mockResolvedValue(0),
+              hasDifference: jest.fn().mockReturnValueOnce(true),
+              extractDifference: jest.fn().mockResolvedValue(0),
+            }),
+            hasDifference: jest.fn().mockReturnValueOnce(true),
+            extractDifference: jest.fn().mockResolvedValue(0),
+          };
+        });
+
         // テスト結果1
         await testStepService.createTestStep(
           testResultId1,
@@ -235,7 +266,12 @@ describe("TestResultService", () => {
 
         expect(result).toEqual({
           diffs: [
-            {},
+            {
+              image: {
+                a: "screenshots/testStep.png",
+                b: "screenshots/testStep.png",
+              },
+            },
             {
               input: {
                 a: "",
@@ -244,6 +280,10 @@ describe("TestResultService", () => {
               title: {
                 a: "",
                 b: "aaa",
+              },
+              image: {
+                a: "screenshots/testStep.png",
+                b: "screenshots/testStep.png",
               },
             },
             {
@@ -271,8 +311,13 @@ describe("TestResultService", () => {
                 a: undefined,
                 b: "[]",
               },
+              image: {
+                a: undefined,
+                b: "skip",
+              },
             },
           ],
+          hasSkipImageCompare: false,
           isSame: false,
           url: expectedUrl,
         });
@@ -305,6 +350,10 @@ describe("TestResultService", () => {
                   a: undefined,
                   b: "null",
                 },
+                image: {
+                  a: undefined,
+                  b: "skip",
+                },
                 title: {
                   a: undefined,
                   b: "",
@@ -319,6 +368,7 @@ describe("TestResultService", () => {
                 },
               },
             ],
+            hasSkipImageCompare: false,
             isSame: false,
             url: expectedUrl,
           });
@@ -350,6 +400,10 @@ describe("TestResultService", () => {
                   a: "null",
                   b: undefined,
                 },
+                image: {
+                  a: "skip",
+                  b: undefined,
+                },
                 title: {
                   a: "",
                   b: undefined,
@@ -364,6 +418,7 @@ describe("TestResultService", () => {
                 },
               },
             ],
+            hasSkipImageCompare: false,
             isSame: false,
             url: expectedUrl,
           });
@@ -375,10 +430,27 @@ describe("TestResultService", () => {
             "unknownId"
           );
 
-          expect(result).toEqual({ diffs: [], isSame: true, url: expectedUrl });
+          expect(result).toEqual({
+            diffs: [],
+            hasSkipImageCompare: false,
+            isSame: true,
+            url: expectedUrl,
+          });
         });
 
         it("オプションで無視するパラメータ名が指定されていた場合は、全ての操作でそのパラメータを比較対象から除外する", async () => {
+          pngImageComparison.mockImplementation(() => {
+            return {
+              init: jest.fn().mockResolvedValue({
+                init: jest.fn().mockResolvedValue(0),
+                hasDifference: jest.fn().mockReturnValueOnce(false),
+                extractDifference: jest.fn().mockResolvedValue(0),
+              }),
+              hasDifference: jest.fn().mockReturnValueOnce(false),
+              extractDifference: jest.fn().mockResolvedValue(0),
+            };
+          });
+
           const elementInfo = {
             tagname: "textarea",
             text: "text",
@@ -450,8 +522,13 @@ describe("TestResultService", () => {
                   a: undefined,
                   b: "[]",
                 },
+                image: {
+                  a: undefined,
+                  b: "skip",
+                },
               },
             ],
+            hasSkipImageCompare: false,
             isSame: false,
             url: expectedUrl,
           });

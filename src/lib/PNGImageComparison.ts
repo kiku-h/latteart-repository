@@ -18,14 +18,14 @@ import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
 import LoggingService from "@/logger/LoggingService";
 
-export default class CompareImage {
+export default class PNGImageComparison {
   private base?: Buffer;
   private target?: Buffer;
 
   public async init(
     baseFilePath: string,
     targetFilePath: string
-  ): Promise<CompareImage> {
+  ): Promise<PNGImageComparison> {
     return new Promise((resolve, reject) => {
       fs.readFile(baseFilePath, (err1, file1) => {
         if (err1) {
@@ -50,7 +50,7 @@ export default class CompareImage {
     if (!this.base || !this.target) {
       throw new Error("invalid file settings.");
     }
-    return this.base.equals(this.target);
+    return !this.base.equals(this.target);
   }
 
   public extractDifference(outputPath: string): Promise<void> {

@@ -38,7 +38,7 @@ import {
   OperationDiffChecker,
 } from "@/lib/OperationDiffChecker";
 import LoggingService from "@/logger/LoggingService";
-import CompareImage from "@/lib/compareImage";
+import PNGImageComparison from "@/lib/PNGImageComparison";
 import path from "path";
 import { StaticDirectoryService } from "./StaticDirectoryService";
 import { publicDirPath } from "@/common";
@@ -404,12 +404,12 @@ export class TestStepServiceImpl implements TestStepService {
         `compare image":  ${testStep1?.operation.imageFileUrl} - ${testStep2?.operation.imageFileUrl}`
       );
 
-      const compareImage = await new CompareImage().init(
+      const pngImageComparison = await new PNGImageComparison().init(
         path.join(publicDirPath, testStep1?.operation.imageFileUrl),
         path.join(publicDirPath, testStep2?.operation.imageFileUrl)
       );
-      if (compareImage.hasDifference()) {
-        compareImage.extractDifference(
+      if (pngImageComparison.hasDifference()) {
+        pngImageComparison.extractDifference(
           path.join(outputImageDiffPath, fileName)
         );
         diff["image"] = {
@@ -417,6 +417,11 @@ export class TestStepServiceImpl implements TestStepService {
           b: testStep2?.operation.imageFileUrl,
         };
       }
+    } else if (testStep1 || testStep2) {
+      diff["image"] = {
+        a: testStep1 ? "skip" : undefined,
+        b: testStep2 ? "skip" : undefined,
+      };
     }
 
     return diff;

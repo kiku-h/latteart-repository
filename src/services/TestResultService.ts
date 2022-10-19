@@ -379,6 +379,7 @@ export class TestResultServiceImpl implements TestResultService {
       };
     }[];
     isSame: boolean;
+    hasSkipImageCompare: boolean;
     url: string;
   }> {
     const timestamp = this.service.timestamp.format("YYYYMMDD_HHmmss");
@@ -414,7 +415,16 @@ export class TestResultServiceImpl implements TestResultService {
         })
     );
 
-    const isDifferent = diffs.some((diff) => JSON.stringify(diff) !== "{}");
+    const isDifferent = diffs.some((diff) => {
+      return Object.entries(diff).some(([key, value]) => {
+        return key !== "image" ? true : value.a === "skip" ? false : true;
+      });
+    });
+    const hasSkipImageCompare = diffs.some((diff) => {
+      return diff["image"]
+        ? diff["image"].a === "skip" && diff["image"].b === "skip"
+        : false;
+    });
     const outputPath = path.join(outputDirectoryPath, `diffs.json`);
     await fs.outputFile(outputPath, JSON.stringify(diffs));
 
@@ -428,6 +438,7 @@ export class TestResultServiceImpl implements TestResultService {
 
     const data = {
       diffs,
+      hasSkipImageCompare,
       isSame: !isDifferent,
       url: this.service.staticDirectory.getFileUrl(zipFileName),
     };

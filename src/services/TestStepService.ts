@@ -25,12 +25,23 @@ import {
   CreateTestStepResponse,
   PatchTestStepResponse,
   ElementInfo,
+  Operation,
+  TestStep,
 } from "@/interfaces/TestSteps";
 import { getRepository } from "typeorm";
 import { TimestampService } from "./TimestampService";
 import { ImageFileRepositoryService } from "./ImageFileRepositoryService";
 import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
 import { ConfigsService } from "./ConfigsService";
+import {
+  DiffCheckFunction,
+  OperationDiffChecker,
+} from "@/lib/OperationDiffChecker";
+import LoggingService from "@/logger/LoggingService";
+import PNGImageComparison from "@/lib/PNGImageComparison";
+import path from "path";
+import { StaticDirectoryService } from "./StaticDirectoryService";
+import { publicDirPath } from "@/common";
 
 export interface TestStepService {
   getTestStep(testStepId: string): Promise<GetTestStepResponse>;
@@ -63,15 +74,42 @@ export interface TestStepService {
     keywordTexts: any;
   }>;
 
+  getTestStepOperationForDB(testStepId: string): Promise<{
+    input: string;
+    type: string;
+    elementInfo: ElementInfo | null;
+    title: string;
+    url: string;
+    imageFileUrl: string;
+    timestamp: string;
+    inputElements: ElementInfo[];
+    windowHandle: string;
+    keywordTexts: string[];
+    screenElements: { tagname: string; ownedText?: string | null }[];
+  }>;
+
   getTestStepScreenshot(
     testStepId: string
   ): Promise<{ id: string; fileUrl: string }>;
+
+  compareTestSteps(
+    testStepId1: string,
+    testStepId2: string,
+    outputImageDiffPath: string,
+    option?: Partial<{
+      excludeParamNames: string[];
+      excludeTagsNames: string[];
+    }>
+  ): Promise<{
+    [key: string]: { a: string | undefined; b: string | undefined };
+  }>;
 }
 
 export class TestStepServiceImpl implements TestStepService {
   constructor(
     private service: {
       imageFileRepository: ImageFileRepositoryService;
+      screenshotDirectory?: StaticDirectoryService;
       timestamp: TimestampService;
       config: ConfigsService;
     }
@@ -81,6 +119,12 @@ export class TestStepServiceImpl implements TestStepService {
     const testStepEntity = await this.getTestStepEntity(testStepId);
 
     return this.convertTestStepEntityToTestStep(testStepEntity);
+  }
+
+  public async getTestStepForDiff(testStepId: string): Promise<TestStep> {
+    const testStepEntity = await this.getTestStepEntity(testStepId);
+
+    return this.convertTestStepEntityToTestStepForDiff(testStepEntity);
   }
 
   public async createTestStep(
@@ -130,6 +174,20 @@ export class TestStepServiceImpl implements TestStepService {
       ...testResultEntity,
     });
 
+    const screenTagAndText = requestBody.screenElements
+      .filter((element) => {
+        return element.ownedText;
+      })
+      .map((element) => {
+        return {
+          tagname: element.tagname,
+          ownedText: element.ownedText,
+        };
+      });
+    const numberToString = (s: number | undefined) => {
+      return s === undefined ? "" : String(s);
+    };
+
     // add test step.
     const newTestStepEntity = await getRepository(TestStepEntity).save({
       pageTitle: requestBody.title,
@@ -140,8 +198,13 @@ export class TestStepServiceImpl implements TestStepService {
       inputElements: JSON.stringify(requestBody.inputElements),
       windowHandle: requestBody.windowHandle,
       keywordTexts: JSON.stringify(requestBody.keywordTexts ?? []),
+      screenElements: JSON.stringify(screenTagAndText),
       timestamp: requestBody.timestamp,
       testResult: savedTestResultEntity,
+      scrollPositionX: numberToString(requestBody.scrollPosition?.x),
+      scrollPositionY: numberToString(requestBody.scrollPosition?.y),
+      clientSizeWidth: numberToString(requestBody.clientSize?.width),
+      clientSizeHeight: numberToString(requestBody.clientSize?.height),
     });
     const screenshot = new ScreenshotEntity({
       fileUrl: await this.service.imageFileRepository.writeBase64ToFile(
@@ -247,6 +310,29 @@ export class TestStepServiceImpl implements TestStepService {
     return this.getOperationFromTestStepEntity(testStepEntity);
   }
 
+  public async getTestStepOperationForDB(testStepId: string): Promise<{
+    input: string;
+    type: string;
+    elementInfo: ElementInfo | null;
+    title: string;
+    url: string;
+    imageFileUrl: string;
+    timestamp: string;
+    inputElements: ElementInfo[];
+    windowHandle: string;
+    keywordTexts: string[];
+    screenElements: { tagname: string; ownedText?: string | null }[];
+  }> {
+    const testStepEntity = await getRepository(TestStepEntity).findOneOrFail(
+      testStepId,
+      {
+        relations: ["screenshot"],
+      }
+    );
+
+    return this.getOperationFromTestStepEntityForDB(testStepEntity);
+  }
+
   public async getTestStepScreenshot(
     testStepId: string
   ): Promise<{ id: string; fileUrl: string }> {
@@ -263,6 +349,88 @@ export class TestStepServiceImpl implements TestStepService {
     };
   }
 
+  public async compareTestSteps(
+    testStepId1: string,
+    testStepId2: string,
+    outputImageDiffPath: string,
+    option: Partial<{
+      excludeParamNames: string[];
+      excludeTagsNames: string[];
+    }> = {}
+  ): Promise<{
+    [key: string]: { a: string | undefined; b: string | undefined };
+  }> {
+    const testStep1 = await this.getTestStepForDiff(testStepId1).catch(
+      (error) => {
+        LoggingService.warn(error);
+        return undefined;
+      }
+    );
+    const testStep2 = await this.getTestStepForDiff(testStepId2).catch(
+      (error) => {
+        LoggingService.warn(error);
+        return undefined;
+      }
+    );
+
+    const paramNameToOptions: [
+      paramName: keyof Operation,
+      options: { name?: string; func?: DiffCheckFunction }
+    ][] =
+      option.excludeParamNames?.map((paramName) => {
+        return [paramName as keyof Operation, { func: () => undefined }];
+      }) ?? [];
+
+    const diff = await new OperationDiffChecker(...paramNameToOptions).diff(
+      testStep1?.operation,
+      testStep2?.operation,
+      option.excludeTagsNames
+    );
+
+    if (
+      !(option.excludeParamNames ?? []).includes("screenshot") &&
+      testStep1?.operation.imageFileUrl &&
+      testStep1.operation.imageFileUrl.endsWith(".png") &&
+      testStep2?.operation.imageFileUrl &&
+      testStep2.operation.imageFileUrl.endsWith(".png")
+    ) {
+      const fileName = `${
+        path.basename(testStep1?.operation.imageFileUrl).split(".")[0]
+      }_${path.basename(testStep2?.operation.imageFileUrl).split(".")[0]}.png`;
+
+      if (!this.service.screenshotDirectory) {
+        throw new Error("screenshotDirectoryService is undefined.");
+      }
+      LoggingService.info(
+        `compare image":  ${testStep1?.operation.imageFileUrl} - ${testStep2?.operation.imageFileUrl}`
+      );
+
+      const pngImageComparison = await new PNGImageComparison().init(
+        path.join(publicDirPath, testStep1?.operation.imageFileUrl),
+        path.join(publicDirPath, testStep2?.operation.imageFileUrl)
+      );
+      if (pngImageComparison.hasDifference()) {
+        pngImageComparison.extractDifference(
+          path.join(outputImageDiffPath, fileName)
+        );
+        diff["screenshot"] = {
+          a: testStep1?.operation.imageFileUrl,
+          b: testStep2?.operation.imageFileUrl,
+        };
+      }
+    } else if (
+      !(option.excludeParamNames ?? []).includes("screenshot") &&
+      (testStep1 || testStep2)
+    ) {
+      diff["screenshot"] = {
+        a: testStep1 ? "skip" : undefined,
+        b: testStep2 ? "skip" : undefined,
+      };
+    }
+
+    return diff;
+  }
+
   private async getOperationFromTestStepEntity(testStepEntity: TestStepEntity) {
     return {
       input: testStepEntity.operationInput,
@@ -275,6 +443,52 @@ export class TestStepServiceImpl implements TestStepService {
       inputElements: JSON.parse(testStepEntity.inputElements),
       windowHandle: testStepEntity.windowHandle,
       keywordTexts: JSON.parse(testStepEntity.keywordTexts),
+      scrollPosition:
+        testStepEntity.scrollPositionX === ""
+          ? undefined
+          : {
+              x: Number(testStepEntity.scrollPositionX),
+              y: Number(testStepEntity.scrollPositionY),
+            },
+      clientSize:
+        testStepEntity.clientSizeWidth === ""
+          ? undefined
+          : {
+              width: Number(testStepEntity.clientSizeWidth),
+              height: Number(testStepEntity.clientSizeHeight),
+            },
+    };
+  }
+
+  private async getOperationFromTestStepEntityForDB(
+    testStepEntity: TestStepEntity
+  ) {
+    return {
+      input: testStepEntity.operationInput,
+      type: testStepEntity.operationType,
+      elementInfo: JSON.parse(testStepEntity.operationElement),
+      title: testStepEntity.pageTitle,
+      url: testStepEntity.pageUrl,
+      imageFileUrl: testStepEntity.screenshot?.fileUrl ?? "",
+      timestamp: testStepEntity.timestamp.toString(),
+      inputElements: JSON.parse(testStepEntity.inputElements),
+      windowHandle: testStepEntity.windowHandle,
+      keywordTexts: JSON.parse(testStepEntity.keywordTexts),
+      screenElements: JSON.parse(testStepEntity.screenElements),
+      scrollPosition:
+        testStepEntity.scrollPositionX === ""
+          ? undefined
+          : {
+              x: Number(testStepEntity.scrollPositionX),
+              y: Number(testStepEntity.scrollPositionY),
+            },
+      clientSize:
+        testStepEntity.clientSizeWidth === ""
+          ? undefined
+          : {
+              width: Number(testStepEntity.clientSizeWidth),
+              height: Number(testStepEntity.clientSizeHeight),
+            },
     };
   }
 
@@ -282,6 +496,16 @@ export class TestStepServiceImpl implements TestStepService {
     return {
       id: entity.id,
       operation: await this.getOperationFromTestStepEntity(entity),
+      intention: entity.testPurpose ? entity.testPurpose.id : null,
+      bugs: [],
+      notices: entity.notes?.map((note) => note.id) ?? [],
+    };
+  }
+
+  private async convertTestStepEntityToTestStepForDiff(entity: TestStepEntity) {
+    return {
+      id: entity.id,
+      operation: await this.getOperationFromTestStepEntityForDB(entity),
       intention: entity.testPurpose ? entity.testPurpose.id : null,
       bugs: [],
       notices: entity.notes?.map((note) => note.id) ?? [],

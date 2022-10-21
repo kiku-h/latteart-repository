@@ -18,6 +18,7 @@ import { ScreenDefinitionConfig } from "../lib/ScreenDefFactory";
 import {
   AutofillSetting,
   AutoOperationSetting,
+  CompareInfo,
   Coverage,
 } from "../lib/settings/Settings";
 
@@ -52,6 +53,7 @@ export interface GetConfigResponse {
       isEnabled: boolean;
       isDeleteSrcImage: boolean;
     };
+    compare: CompareInfo;
   };
   captureSettings: {
     ignoreTags: string[];

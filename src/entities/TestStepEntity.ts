@@ -46,6 +46,9 @@ export class TestStepEntity {
   @Column({ name: "keyword_texts" })
   keywordTexts: string = "[]";
 
+  @Column({ name: "screen_elements" })
+  screenElements: string = "[]";
+
   @Column({ name: "operation_type" })
   operationType: string = "";
 
@@ -57,6 +60,18 @@ export class TestStepEntity {
 
   @Column({ name: "input_elements" })
   inputElements: string = "[]";
+
+  @Column({ name: "scroll_position_x" })
+  scrollPositionX: string = "";
+
+  @Column({ name: "scroll_position_y" })
+  scrollPositionY: string = "";
+
+  @Column({ name: "client_size_width" })
+  clientSizeWidth: string = "";
+
+  @Column({ name: "client_size_height" })
+  clientSizeHeight: string = "";
 
   @Column({ name: "timestamp" })
   timestamp: number = 0;

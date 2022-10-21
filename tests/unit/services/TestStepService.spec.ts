@@ -1,6 +1,9 @@
 import { TestResultEntity } from "@/entities/TestResultEntity";
 import { TestStepEntity } from "@/entities/TestStepEntity";
-import { TestStepServiceImpl } from "@/services/TestStepService";
+import {
+  TestStepService,
+  TestStepServiceImpl,
+} from "@/services/TestStepService";
 import { ImageFileRepositoryService } from "@/services/ImageFileRepositoryService";
 import { TimestampService } from "@/services/TimestampService";
 import { ConfigsService } from "@/services/ConfigsService";
@@ -8,6 +11,7 @@ import { getRepository } from "typeorm";
 import { SqliteTestConnectionHelper } from "../../helper/TestConnectionHelper";
 import { CreateTestStepDto } from "@/interfaces/TestSteps";
 import { CoverageSourceEntity } from "@/entities/CoverageSourceEntity";
+import PNGImageComparison from "@/lib/PNGImageComparison";
 
 const testConnectionHelper = new SqliteTestConnectionHelper();
 
@@ -18,6 +22,9 @@ beforeEach(async () => {
 afterEach(async () => {
   await testConnectionHelper.closeTestConnection();
 });
+
+jest.mock("../../../src/lib/PNGImageComparison");
+const pngImageComparison = PNGImageComparison as jest.Mock;
 
 describe("TestStepService", () => {
   describe("#createTestStep", () => {
@@ -50,6 +57,9 @@ describe("TestStepService", () => {
         tagname: "tagname2",
         xpath: "xpath2",
         attributes: {},
+        text: "text",
+        value: "value",
+        ownedText: "ownedText",
       };
 
       const defaultScreenElements = [element1];
@@ -168,6 +178,211 @@ describe("TestStepService", () => {
         intention: null,
         bugs: [],
         notices: [],
+      });
+    });
+  });
+
+  describe("#compareTestSteps", () => {
+    let testStepService: TestStepService;
+
+    beforeEach(() => {
+      const imageFileRepositoryService: ImageFileRepositoryService = {
+        writeBufferToFile: jest.fn(),
+        writeBase64ToFile: jest.fn().mockResolvedValue("testStep.png"),
+        removeFile: jest.fn(),
+        getFilePath: jest.fn(),
+        getFileUrl: jest.fn(),
+      };
+
+      const timestampService: TimestampService = {
+        unix: jest.fn().mockReturnValue(0),
+        format: jest.fn(),
+        epochMilliseconds: jest.fn(),
+      };
+
+      testStepService = new TestStepServiceImpl({
+        imageFileRepository: imageFileRepositoryService,
+        timestamp: timestampService,
+        config: new ConfigsService(),
+        screenshotDirectory: {
+          mkdir: jest.fn(),
+          outputFile: jest.fn(),
+          removeFile: jest.fn(),
+          copyFile: jest.fn(),
+          getFileUrl: jest.fn(),
+          getJoinedPath: jest.fn(),
+          moveFile: jest.fn(),
+          collectFileNames: jest.fn(),
+          collectFilePaths: jest.fn(),
+        },
+      });
+    });
+
+    describe("2つのテストステップの差分を抽出する", () => {
+      const baseRequestBody: CreateTestStepDto = {
+        input: "",
+        type: "",
+        elementInfo: null,
+        title: "",
+        url: "",
+        imageData: "",
+        windowHandle: "",
+        screenElements: [],
+        inputElements: [],
+        keywordTexts: [],
+        timestamp: 0,
+        pageSource: "",
+      };
+
+      let testResultId: string;
+
+      beforeEach(async () => {
+        const testResultEntity = await getRepository(TestResultEntity).save(
+          new TestResultEntity()
+        );
+        testResultId = testResultEntity.id;
+        pngImageComparison.mockClear();
+      });
+
+      it("テストステップ内の操作の各パラメータを比較する", async () => {
+        pngImageComparison.mockImplementation(() => {
+          return {
+            init: jest
+              .fn()
+              .mockResolvedValueOnce({
+                init: jest.fn().mockResolvedValue(0),
+                hasDifference: jest.fn().mockReturnValueOnce(false),
+                extractDifference: jest.fn().mockResolvedValue(0),
+              })
+              .mockResolvedValueOnce({
+                init: jest.fn().mockResolvedValue(0),
+                hasDifference: jest.fn().mockReturnValueOnce(false),
+                extractDifference: jest.fn().mockResolvedValue(0),
+              }),
+          };
+        });
+
+        const requestBody1: CreateTestStepDto = {
+          ...baseRequestBody,
+          title: "title1",
+        };
+        const requestBody2: CreateTestStepDto = {
+          ...baseRequestBody,
+          title: "title2",
+        };
+
+        const testStep1 = await testStepService.createTestStep(
+          testResultId,
+          requestBody1
+        );
+        const testStep2 = await testStepService.createTestStep(
+          testResultId,
+          requestBody2
+        );
+
+        expect(
+          await testStepService.compareTestSteps(
+            testStep1.id,
+            testStep2.id,
+            "outputImageDiffPath"
+          )
+        ).toEqual({
+          title: {
+            a: "title1",
+            b: "title2",
+          },
+        });
+
+        expect(
+          await testStepService.compareTestSteps(
+            testStep1.id,
+            testStep1.id,
+            "outputImageDiffPath"
+          )
+        ).toEqual({});
+      });
+
+      it("指定のテストステップIDに対応するテストステップがない場合は操作の各パラメータをundefinedとみなして比較する", async () => {
+        const testStep = await testStepService.createTestStep(
+          testResultId,
+          baseRequestBody
+        );
+
+        expect(
+          await testStepService.compareTestSteps(
+            testStep.id,
+            "unknownId",
+            "outputImageDiffPath"
+          )
+        ).toEqual({
+          input: {
+            a: "",
+            b: undefined,
+          },
+          type: {
+            a: "",
+            b: undefined,
+          },
+          elementInfo: {
+            a: "null",
+            b: undefined,
+          },
+          screenshot: {
+            a: "skip",
+            b: undefined,
+          },
+          title: {
+            a: "",
+            b: undefined,
+          },
+          url: {
+            a: "",
+            b: undefined,
+          },
+          screenElements: {
+            a: "[]",
+            b: undefined,
+          },
+        });
+
+        expect(
+          await testStepService.compareTestSteps(
+            "unknownId",
+            "unknownId",
+            "outputImageDiffPath"
+          )
+        ).toEqual({});
+      });
+
+      it("オプションで無視するパラメータ名が指定されていた場合は、そのパラメータを比較対象から除外する", async () => {
+        const requestBody1: CreateTestStepDto = {
+          ...baseRequestBody,
+          keywordTexts: ["aaa", "bbb", "ccc"],
+        };
+        const requestBody2: CreateTestStepDto = {
+          ...baseRequestBody,
+          keywordTexts: ["aaa", "bbb", "ddd"],
+        };
+
+        const testStep1 = await testStepService.createTestStep(
+          testResultId,
+          requestBody1
+        );
+        const testStep2 = await testStepService.createTestStep(
+          testResultId,
+          requestBody2
+        );
+
+        const option = { excludeParamNames: ["keywordTexts"] };
+
+        expect(
+          await testStepService.compareTestSteps(
+            testStep1.id,
+            testStep2.id,
+            "outputImageDiffPath",
+            option
+          )
+        ).toEqual({});
       });
     });
   });

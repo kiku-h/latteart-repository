@@ -48,6 +48,18 @@ describe("SettingsProvider", () => {
           isDeleteSrcImage: true,
           isEnabled: true,
         },
+        compare: {
+          exclude: {
+            query: {
+              isEnabled: false,
+              item: "",
+            },
+            tags: {
+              isEnabled: false,
+              item: "",
+            },
+          },
+        },
       },
       captureSettings: {
         ignoreTags: [],
@@ -206,6 +218,18 @@ describe("SettingsProvider", () => {
             isDeleteSrcImage: true,
             isEnabled: true,
           },
+          compare: {
+            exclude: {
+              query: {
+                isEnabled: false,
+                item: "",
+              },
+              tags: {
+                isEnabled: false,
+                item: "",
+              },
+            },
+          },
         },
         captureSettings: {
           ignoreTags: [
@@ -287,6 +311,18 @@ describe("SettingsProvider", () => {
             command: "cwebp {filePath} -o {dirPath}/{baseName}.webp",
             isDeleteSrcImage: true,
             isEnabled: true,
+          },
+          compare: {
+            exclude: {
+              query: {
+                isEnabled: false,
+                item: "",
+              },
+              tags: {
+                isEnabled: false,
+                item: "",
+              },
+            },
           },
         },
         captureSettings: {

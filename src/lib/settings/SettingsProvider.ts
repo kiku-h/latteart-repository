@@ -226,5 +226,33 @@ export class SettingsProvider {
     if (source.captureSettings && source.captureSettings.ignoreTags) {
       target.captureSettings.ignoreTags = source.captureSettings.ignoreTags;
     }
+
+    if (source.config && source.config.compare) {
+      const sourceCompare = source.config.compare;
+
+      if (sourceCompare.exclude && sourceCompare.exclude.query.isEnabled) {
+        Object.assign(
+          target.config.compare.exclude.query.isEnabled,
+          source.config.compare.exclude.query.isEnabled
+        );
+      }
+
+      if (sourceCompare.exclude && sourceCompare.exclude.tags.isEnabled) {
+        Object.assign(
+          target.config.compare.exclude.tags.isEnabled,
+          source.config.compare.exclude.tags.isEnabled
+        );
+      }
+
+      if (sourceCompare.exclude && sourceCompare.exclude.query.item) {
+        target.config.compare.exclude.query.item =
+          sourceCompare.exclude.query.item;
+      }
+
+      if (sourceCompare.exclude && sourceCompare.exclude.tags.item) {
+        target.config.compare.exclude.tags.item =
+          sourceCompare.exclude.tags.item;
+      }
+    }
   }
 }

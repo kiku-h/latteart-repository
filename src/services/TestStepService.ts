@@ -388,7 +388,7 @@ export class TestStepServiceImpl implements TestStepService {
     );
 
     if (
-      !(option.excludeParamNames ?? []).includes("screenshots") &&
+      !(option.excludeParamNames ?? []).includes("screenshot") &&
       testStep1?.operation.imageFileUrl &&
       testStep1.operation.imageFileUrl.endsWith(".png") &&
       testStep2?.operation.imageFileUrl &&
@@ -419,7 +419,7 @@ export class TestStepServiceImpl implements TestStepService {
         };
       }
     } else if (
-      !(option.excludeParamNames ?? []).includes("screenshots") &&
+      !(option.excludeParamNames ?? []).includes("screenshot") &&
       (testStep1 || testStep2)
     ) {
       diff["screenshot"] = {

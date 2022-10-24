@@ -1,6 +1,6 @@
 {
   "name": "latteart-repository",
-  "version": "2.6.0",
+  "version": "2.6.0+ext",
   "main": "index.js",
   "private": true,
   "scripts": {

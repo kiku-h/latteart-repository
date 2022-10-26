@@ -265,6 +265,7 @@ describe("TestResultService", () => {
         );
 
         expect(result).toEqual({
+          diffCount: 3,
           diffs: [
             {
               screenshot: {
@@ -318,7 +319,6 @@ describe("TestResultService", () => {
             },
           ],
           hasInvalidScreenshots: false,
-          isSame: false,
           url: expectedUrl,
         });
       }, 10000);
@@ -336,6 +336,7 @@ describe("TestResultService", () => {
           );
 
           expect(result).toEqual({
+            diffCount: 1,
             diffs: [
               {
                 input: {
@@ -369,7 +370,6 @@ describe("TestResultService", () => {
               },
             ],
             hasInvalidScreenshots: false,
-            isSame: false,
             url: expectedUrl,
           });
         });
@@ -386,6 +386,7 @@ describe("TestResultService", () => {
           );
 
           expect(result).toEqual({
+            diffCount: 1,
             diffs: [
               {
                 input: {
@@ -419,7 +420,6 @@ describe("TestResultService", () => {
               },
             ],
             hasInvalidScreenshots: false,
-            isSame: false,
             url: expectedUrl,
           });
         });
@@ -431,9 +431,9 @@ describe("TestResultService", () => {
           );
 
           expect(result).toEqual({
+            diffCount: 0,
             diffs: [],
             hasInvalidScreenshots: false,
-            isSame: true,
             url: expectedUrl,
           });
         });
@@ -502,6 +502,7 @@ describe("TestResultService", () => {
           );
 
           expect(result).toEqual({
+            diffCount: 1,
             diffs: [
               {},
               {},
@@ -529,7 +530,6 @@ describe("TestResultService", () => {
               },
             ],
             hasInvalidScreenshots: false,
-            isSame: false,
             url: expectedUrl,
           });
         }, 10000);

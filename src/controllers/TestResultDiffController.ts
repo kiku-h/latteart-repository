@@ -36,13 +36,13 @@ export class TestResultDiffController extends Controller {
       excludeTags?: string;
     }
   ): Promise<{
+    diffCount: number;
     diffs: {
       [key: string]: {
         a?: string;
         b?: string;
       };
     }[];
-    isSame: boolean;
     url: string;
   }> {
     const excludeParamNames = requestBody.excludeQuery?.split(",") ?? [];

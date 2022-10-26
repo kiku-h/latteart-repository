@@ -77,13 +77,13 @@ export interface TestResultService {
       excludeTagsNames: string[];
     }>
   ): Promise<{
+    diffCount: number;
     diffs: {
       [key: string]: {
         a: string | undefined;
         b: string | undefined;
       };
     }[];
-    isSame: boolean;
     url: string;
   }>;
 }
@@ -372,13 +372,13 @@ export class TestResultServiceImpl implements TestResultService {
       excludeTagsNames: string[];
     }> = {}
   ): Promise<{
+    diffCount: number;
     diffs: {
       [key: string]: {
         a: string | undefined;
         b: string | undefined;
       };
     }[];
-    isSame: boolean;
     hasInvalidScreenshots: boolean;
     url: string;
   }> {
@@ -415,11 +415,12 @@ export class TestResultServiceImpl implements TestResultService {
         })
     );
 
-    const isDifferent = diffs.some((diff) => {
+    const diffCount = diffs.filter((diff) => {
       return Object.entries(diff).some(([key, value]) => {
         return key !== "screenshot" ? true : value.a === "skip" ? false : true;
       });
-    });
+    }).length;
+
     const hasInvalidScreenshots = diffs.some((diff) => {
       return diff["screenshot"]
         ? diff["screenshot"].a === "skip" && diff["screenshot"].b === "skip"
@@ -438,9 +439,9 @@ export class TestResultServiceImpl implements TestResultService {
     await this.service.staticDirectory.moveFile(zipFilePath, zipFileName);
 
     const data = {
+      diffCount,
       diffs,
       hasInvalidScreenshots,
-      isSame: !isDifferent,
       url: this.service.staticDirectory.getFileUrl(zipFileName),
     };
 

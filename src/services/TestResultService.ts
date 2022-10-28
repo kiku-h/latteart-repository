@@ -408,7 +408,7 @@ export class TestResultServiceImpl implements TestResultService {
         .map(async (_, index) => {
           const testStepId1 = testStepIds1[index] ?? "";
           const testStepId2 = testStepIds2[index] ?? "";
-          const diffImageFileName = path.join(
+          const diffImageFilePath = path.join(
             diffImageDirectoryPath,
             `${index + 1}.png`
           );
@@ -416,7 +416,7 @@ export class TestResultServiceImpl implements TestResultService {
           return this.service.testStep.compareTestSteps(
             testStepId1,
             testStepId2,
-            diffImageFileName,
+            diffImageFilePath,
             option
           );
         })

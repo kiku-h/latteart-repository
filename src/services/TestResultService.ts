@@ -387,9 +387,12 @@ export class TestResultServiceImpl implements TestResultService {
     const tmpDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "latteart-"));
 
     const outputDirectoryPath = path.join(tmpDirPath, `compare_${timestamp}`);
-    const outputImageDiffPath = path.join(outputDirectoryPath, "screenshots");
+    const diffImageDirectoryPath = path.join(
+      outputDirectoryPath,
+      "screenshots"
+    );
 
-    await fs.mkdirp(outputImageDiffPath);
+    await fs.mkdirp(diffImageDirectoryPath);
 
     const testStepIds1 = await this.collectAllTestStepIds(testResultId1);
     const testStepIds2 = await this.collectAllTestStepIds(testResultId2);
@@ -405,11 +408,15 @@ export class TestResultServiceImpl implements TestResultService {
         .map(async (_, index) => {
           const testStepId1 = testStepIds1[index] ?? "";
           const testStepId2 = testStepIds2[index] ?? "";
+          const diffImageFilePath = path.join(
+            diffImageDirectoryPath,
+            `${index + 1}.png`
+          );
 
           return this.service.testStep.compareTestSteps(
             testStepId1,
             testStepId2,
-            outputImageDiffPath,
+            diffImageFilePath,
             option
           );
         })

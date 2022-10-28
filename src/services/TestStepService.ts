@@ -95,7 +95,7 @@ export interface TestStepService {
   compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    outputImageDiffPath: string,
+    diffImageFilePath: string,
     option?: Partial<{
       excludeParamNames: string[];
       excludeTagsNames: string[];
@@ -352,7 +352,7 @@ export class TestStepServiceImpl implements TestStepService {
   public async compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    outputImageDiffPath: string,
+    diffImageFilePath: string,
     option: Partial<{
       excludeParamNames: string[];
       excludeTagsNames: string[];
@@ -394,10 +394,6 @@ export class TestStepServiceImpl implements TestStepService {
       testStep2?.operation.imageFileUrl &&
       testStep2.operation.imageFileUrl.endsWith(".png")
     ) {
-      const fileName = `${
-        path.basename(testStep1?.operation.imageFileUrl).split(".")[0]
-      }_${path.basename(testStep2?.operation.imageFileUrl).split(".")[0]}.png`;
-
       if (!this.service.screenshotDirectory) {
         throw new Error("screenshotDirectoryService is undefined.");
       }
@@ -410,9 +406,7 @@ export class TestStepServiceImpl implements TestStepService {
         path.join(publicDirPath, testStep2?.operation.imageFileUrl)
       );
       if (pngImageComparison.hasDifference()) {
-        pngImageComparison.extractDifference(
-          path.join(outputImageDiffPath, fileName)
-        );
+        pngImageComparison.extractDifference(diffImageFilePath);
         diff["screenshot"] = {
           a: testStep1?.operation.imageFileUrl,
           b: testStep2?.operation.imageFileUrl,

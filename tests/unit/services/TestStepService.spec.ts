@@ -284,7 +284,7 @@ describe("TestStepService", () => {
           await testStepService.compareTestSteps(
             testStep1.id,
             testStep2.id,
-            "outputImageDiffPath"
+            "diffImageFilePath.png"
           )
         ).toEqual({
           title: {
@@ -297,7 +297,7 @@ describe("TestStepService", () => {
           await testStepService.compareTestSteps(
             testStep1.id,
             testStep1.id,
-            "outputImageDiffPath"
+            "diffImageFilePath.png"
           )
         ).toEqual({});
       });
@@ -312,7 +312,7 @@ describe("TestStepService", () => {
           await testStepService.compareTestSteps(
             testStep.id,
             "unknownId",
-            "outputImageDiffPath"
+            "diffImageFilePath.png"
           )
         ).toEqual({
           input: {
@@ -349,7 +349,7 @@ describe("TestStepService", () => {
           await testStepService.compareTestSteps(
             "unknownId",
             "unknownId",
-            "outputImageDiffPath"
+            "diffImageFilePath.png"
           )
         ).toEqual({});
       });
@@ -379,7 +379,7 @@ describe("TestStepService", () => {
           await testStepService.compareTestSteps(
             testStep1.id,
             testStep2.id,
-            "outputImageDiffPath",
+            "diffImageFilePath.png",
             option
           )
         ).toEqual({});

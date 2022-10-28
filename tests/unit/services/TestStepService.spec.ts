@@ -282,10 +282,9 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
-            1,
             testStep1.id,
             testStep2.id,
-            "outputImageDiffPath"
+            "screenshotfileName.png"
           )
         ).toEqual({
           title: {
@@ -296,10 +295,9 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
-            1,
             testStep1.id,
             testStep1.id,
-            "outputImageDiffPath"
+            "screenshotfileName.png"
           )
         ).toEqual({});
       });
@@ -312,10 +310,9 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
-            1,
             testStep.id,
             "unknownId",
-            "outputImageDiffPath"
+            "screenshotfileName.png"
           )
         ).toEqual({
           input: {
@@ -350,10 +347,9 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
-            1,
             "unknownId",
             "unknownId",
-            "outputImageDiffPath"
+            "screenshotfileName.png"
           )
         ).toEqual({});
       });
@@ -381,10 +377,9 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
-            1,
             testStep1.id,
             testStep2.id,
-            "outputImageDiffPath",
+            "screenshotfileName.png",
             option
           )
         ).toEqual({});

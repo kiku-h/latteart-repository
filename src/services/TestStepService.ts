@@ -95,7 +95,7 @@ export interface TestStepService {
   compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    screenshotfileName: string,
+    diffImageFileName: string,
     option?: Partial<{
       excludeParamNames: string[];
       excludeTagsNames: string[];
@@ -352,7 +352,7 @@ export class TestStepServiceImpl implements TestStepService {
   public async compareTestSteps(
     testStepId1: string,
     testStepId2: string,
-    screenshotfileName: string,
+    diffImageFileName: string,
     option: Partial<{
       excludeParamNames: string[];
       excludeTagsNames: string[];
@@ -406,7 +406,7 @@ export class TestStepServiceImpl implements TestStepService {
         path.join(publicDirPath, testStep2?.operation.imageFileUrl)
       );
       if (pngImageComparison.hasDifference()) {
-        pngImageComparison.extractDifference(screenshotfileName);
+        pngImageComparison.extractDifference(diffImageFileName);
         diff["screenshot"] = {
           a: testStep1?.operation.imageFileUrl,
           b: testStep2?.operation.imageFileUrl,

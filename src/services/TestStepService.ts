@@ -93,6 +93,7 @@ export interface TestStepService {
   ): Promise<{ id: string; fileUrl: string }>;
 
   compareTestSteps(
+    sequence: number,
     testStepId1: string,
     testStepId2: string,
     outputImageDiffPath: string,
@@ -350,6 +351,7 @@ export class TestStepServiceImpl implements TestStepService {
   }
 
   public async compareTestSteps(
+    sequence: number,
     testStepId1: string,
     testStepId2: string,
     outputImageDiffPath: string,
@@ -394,9 +396,7 @@ export class TestStepServiceImpl implements TestStepService {
       testStep2?.operation.imageFileUrl &&
       testStep2.operation.imageFileUrl.endsWith(".png")
     ) {
-      const fileName = `${
-        path.basename(testStep1?.operation.imageFileUrl).split(".")[0]
-      }_${path.basename(testStep2?.operation.imageFileUrl).split(".")[0]}.png`;
+      const fileName = `${sequence}.png`;
 
       if (!this.service.screenshotDirectory) {
         throw new Error("screenshotDirectoryService is undefined.");

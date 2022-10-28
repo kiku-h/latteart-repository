@@ -282,6 +282,7 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
+            1,
             testStep1.id,
             testStep2.id,
             "outputImageDiffPath"
@@ -295,6 +296,7 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
+            1,
             testStep1.id,
             testStep1.id,
             "outputImageDiffPath"
@@ -310,6 +312,7 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
+            1,
             testStep.id,
             "unknownId",
             "outputImageDiffPath"
@@ -347,6 +350,7 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
+            1,
             "unknownId",
             "unknownId",
             "outputImageDiffPath"
@@ -377,6 +381,7 @@ describe("TestStepService", () => {
 
         expect(
           await testStepService.compareTestSteps(
+            1,
             testStep1.id,
             testStep2.id,
             "outputImageDiffPath",

@@ -405,8 +405,10 @@ export class TestResultServiceImpl implements TestResultService {
         .map(async (_, index) => {
           const testStepId1 = testStepIds1[index] ?? "";
           const testStepId2 = testStepIds2[index] ?? "";
+          const sequence = index + 1;
 
           return this.service.testStep.compareTestSteps(
+            sequence,
             testStepId1,
             testStepId2,
             outputImageDiffPath,
